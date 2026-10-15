@@ -165,53 +165,69 @@ public partial class MainWindow : Window
         {
             var date = weekEnd.AddDays(-offset);
             var daySales = database.GetSales(date, cashierEmail);
+            bool isSelected = date.Date == selectedReceiptDate.Date;
             var button = new Button
             {
                 Tag = date,
-                Width = 132,
-                Height = 78,
-                Margin = new Thickness(0, 0, 9, 8),
-                Padding = new Thickness(8),
-                Background = date.Date == selectedReceiptDate.Date
-                    ? new SolidColorBrush(Color.FromRgb(238, 240, 255))
+                Width = 122,
+                Height = 86,
+                Margin = new Thickness(0, 0, 8, 0),
+                Padding = new Thickness(8, 6, 8, 6),
+                Background = isSelected
+                    ? new SolidColorBrush(Color.FromRgb(238, 242, 255))
                     : Brushes.White,
-                BorderBrush = date.Date == selectedReceiptDate.Date
-                    ? new SolidColorBrush(Color.FromRgb(207, 212, 250))
-                    : new SolidColorBrush(Color.FromRgb(222, 225, 233)),
+                BorderBrush = isSelected
+                    ? new SolidColorBrush(Color.FromRgb(67, 56, 202))
+                    : new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+                BorderThickness = new Thickness(1),
                 Cursor = System.Windows.Input.Cursors.Hand,
+                Style = (Style)FindResource("FlatButton"),
                 Content = new StackPanel
                 {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
                     Children =
                     {
                         new TextBlock
                         {
-                            Text = date.Date == DateTime.Today ? "Today" : date.ToString("ddd"),
-                            FontSize = 10,
+                            Text = date.ToString("ddd"),
+                            FontSize = 11,
+                            FontWeight = isSelected ? FontWeights.SemiBold : FontWeights.Normal,
                             HorizontalAlignment = HorizontalAlignment.Center,
-                            Foreground = new SolidColorBrush(Color.FromRgb(100, 108, 126))
+                            Foreground = isSelected
+                                ? new SolidColorBrush(Color.FromRgb(67, 56, 202))
+                                : new SolidColorBrush(Color.FromRgb(71, 85, 105))
                         },
                         new TextBlock
                         {
                             Text = date.ToString("dd MMM"),
                             FontSize = 11,
                             HorizontalAlignment = HorizontalAlignment.Center,
-                            Margin = new Thickness(0, 3, 0, 0)
+                            Margin = new Thickness(0, 2, 0, 0),
+                            Foreground = isSelected
+                                ? new SolidColorBrush(Color.FromRgb(67, 56, 202))
+                                : new SolidColorBrush(Color.FromRgb(100, 116, 139))
                         },
                         new TextBlock
                         {
                             Text = FormatMoney(daySales.Sum(sale => sale.Total)),
-                            FontSize = 13,
+                            FontSize = 13.5,
                             FontWeight = FontWeights.Bold,
-                            Foreground = new SolidColorBrush(Color.FromRgb(65, 73, 165)),
+                            Foreground = isSelected
+                                ? new SolidColorBrush(Color.FromRgb(59, 75, 216))
+                                : new SolidColorBrush(Color.FromRgb(30, 41, 59)),
                             HorizontalAlignment = HorizontalAlignment.Center,
-                            Margin = new Thickness(0, 4, 0, 0)
+                            Margin = new Thickness(0, 3, 0, 0)
                         },
                         new TextBlock
                         {
                             Text = $"{daySales.Count} Orders",
-                            FontSize = 9,
-                            Foreground = new SolidColorBrush(Color.FromRgb(113, 120, 138)),
-                            HorizontalAlignment = HorizontalAlignment.Center
+                            FontSize = 11,
+                            Foreground = isSelected
+                                ? new SolidColorBrush(Color.FromRgb(67, 56, 202))
+                                : new SolidColorBrush(Color.FromRgb(148, 163, 184)),
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Margin = new Thickness(0, 2, 0, 0)
                         }
                     }
                 }
@@ -222,11 +238,15 @@ public partial class MainWindow : Window
 
         var sales = database.GetSales(selectedReceiptDate, cashierEmail);
         SalesGrid.ItemsSource = sales;
-        SelectedReceiptDateText.Text = $"Orders for {selectedReceiptDate:dddd dd MMM yyyy}";
+        SelectedReceiptDateText.Text = $"Orders for Business Day {selectedReceiptDate:dd MMM yyyy} ({selectedReceiptDate:dddd})";
         ReceiptOrderCountText.Text = $"Total orders: {sales.Count}";
         ReceiptDayTotalText.Text = $"Total Sales: {FormatMoney(sales.Sum(sale => sale.Total))}";
-        ReceiptShowingText.Text = $"Showing {sales.Count} receipt{(sales.Count == 1 ? "" : "s")}";
+        ReceiptShowingText.Text = $"Showing 1 - {sales.Count} of {sales.Count} Receipts";
         NextReceiptWeekButton.IsEnabled = receiptWeekOffset > 0;
+        if (ReceiptsCountText != null)
+        {
+            ReceiptsCountText.Text = database.GetSales(DateTime.Today, cashierEmail).Count.ToString();
+        }
     }
 
     private void RefreshShiftStatus()
@@ -674,11 +694,15 @@ public partial class MainWindow : Window
 
     private void ShowSales_Click(object sender, RoutedEventArgs e)
     {
-        SetPage("Sales history", "Review completed transactions saved on this device.", SalesPanel);
-        CartPanel.Visibility = Visibility.Collapsed;
-        CartColumn.Width = new GridLength(0);
-        SetNavigation(SalesNav);
+        ReceiptsModal.Visibility = Visibility.Visible;
+        receiptWeekOffset = 0;
+        selectedReceiptDate = DateTime.Today;
         RefreshSales();
+    }
+
+    private void CloseReceiptsModal_Click(object sender, RoutedEventArgs e)
+    {
+        ReceiptsModal.Visibility = Visibility.Collapsed;
     }
 
     private void OpeningCash_Click(object sender, RoutedEventArgs e)
@@ -734,36 +758,170 @@ public partial class MainWindow : Window
 
     private void HoldOrders_Click(object sender, RoutedEventArgs e)
     {
+        OpenHoldOrderListModal();
+    }
+
+    private void OpenHoldOrderListModal()
+    {
+        HoldOrderListModal.Visibility = Visibility.Visible;
+        if (cart.Count > 0)
+        {
+            HoldCurrentCartBar.Visibility = Visibility.Visible;
+            HoldCustomerNameBox.Text = pendingCustomerName;
+            HoldCartItemsPreviewText.Text = $"({cart.Sum(i => i.Quantity)} items • {FormatMoney(cart.Sum(i => i.LineTotal))})";
+        }
+        else
+        {
+            HoldCurrentCartBar.Visibility = Visibility.Collapsed;
+        }
+
+        if (HoldOrderSearchBox != null)
+        {
+            HoldOrderSearchBox.Text = string.Empty;
+        }
+        RefreshHoldOrdersList();
+    }
+
+    private void CloseHoldOrderList_Click(object sender, RoutedEventArgs e)
+    {
+        HoldOrderListModal.Visibility = Visibility.Collapsed;
+    }
+
+    private void RefreshHoldOrdersList()
+    {
         try
         {
-            var dialog = new HeldOrdersWindow(database, cart, pendingCustomerName, cashierName, cashierEmail) { Owner = this };
-            if (dialog.ShowDialog() == true)
+            var search = HoldOrderSearchBox?.Text?.Trim() ?? "";
+            var allHeld = database.GetHeldOrders(cashierEmail);
+            var held = allHeld;
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                if (dialog.HeldCurrentCart)
-                {
-                    cart.Clear();
-                    selectedCustomer = null;
-                    pendingCustomerName = "Walking Customer";
-                    if (CurrentCustomerText != null)
-                        CurrentCustomerText.Text = "Walking Customer";
-                }
-                else if (dialog.ResumedItems is not null)
-                {
-                    cart.Clear();
-                    foreach (var item in dialog.ResumedItems)
-                        cart.Add(item);
-                    pendingCustomerName = dialog.ResumedCustomerName;
-                    if (CurrentCustomerText != null)
-                        CurrentCustomerText.Text = pendingCustomerName;
-                }
-                UpdateCartSummary();
+                held = allHeld.Where(o =>
+                    o.CustomerName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    o.Id.ToString().Contains(search) ||
+                    o.Total.ToString().Contains(search)).ToList();
             }
-            RefreshShiftStatus();
+
+            if (HoldCountText != null)
+            {
+                HoldCountText.Text = allHeld.Count.ToString();
+            }
+
+            if (held.Count == 0)
+            {
+                HoldOrderEmptyState.Visibility = Visibility.Visible;
+                HoldOrdersGrid.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                HoldOrderEmptyState.Visibility = Visibility.Collapsed;
+                HoldOrdersGrid.Visibility = Visibility.Visible;
+                HoldOrdersGrid.ItemsSource = held;
+            }
+
+            if (HoldOrdersCountText != null)
+            {
+                HoldOrdersCountText.Text = $"Showing {held.Count} Hold Order{(held.Count == 1 ? "" : "s")}";
+            }
         }
-        catch (Exception ex) when (ex is Microsoft.Data.Sqlite.SqliteException or InvalidOperationException)
+        catch (Exception ex)
         {
-            MessageBox.Show($"Held orders could not be loaded.\n\n{ex.Message}",
-                "Hold orders", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Diagnostics.Debug.WriteLine($"Error loading held orders: {ex.Message}");
+        }
+    }
+
+    private void HoldOrderSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        RefreshHoldOrdersList();
+    }
+
+    private void HoldCurrentCart_Click(object sender, RoutedEventArgs e)
+    {
+        if (cart.Count == 0)
+        {
+            MessageBox.Show("There are no items in the cart to hold.", "Cart Empty", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            var custName = HoldCustomerNameBox?.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(custName)) custName = "Walking Customer";
+            database.SaveHeldOrder(custName, cart, cashierName, cashierEmail);
+            cart.Clear();
+            selectedCustomer = null;
+            pendingCustomerName = "Walking Customer";
+            if (CurrentCustomerText != null) CurrentCustomerText.Text = "Walking Customer";
+            UpdateCartSummary();
+            RefreshHoldOrdersList();
+            HoldCurrentCartBar.Visibility = Visibility.Collapsed;
+            MessageBox.Show("Cart held successfully!", "Order Held", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Failed to hold cart: {ex.Message}", "Hold Order Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void ResumeHoldOrderRow_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not HeldOrderSummary selected)
+            return;
+
+        if (cart.Count > 0)
+        {
+            var confirm = MessageBox.Show(
+                "Resuming this order will replace your current cart items. Do you want to continue?",
+                "Replace Current Cart", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (confirm != MessageBoxResult.Yes) return;
+        }
+
+        try
+        {
+            var resumed = database.ResumeHeldOrder(selected.Id);
+            cart.Clear();
+            foreach (var item in resumed.Items)
+            {
+                cart.Add(item);
+            }
+            pendingCustomerName = resumed.CustomerName;
+            if (CurrentCustomerText != null) CurrentCustomerText.Text = pendingCustomerName;
+            UpdateCartSummary();
+            HoldOrderListModal.Visibility = Visibility.Collapsed;
+            RefreshHoldOrdersList();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Could not resume held order: {ex.Message}", "Resume Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void DeleteHoldOrderRow_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not HeldOrderSummary selected)
+            return;
+
+        var confirm = MessageBox.Show(
+            $"Delete the held order for {selected.CustomerName} ({FormatMoney(selected.Total)})?",
+            "Delete Held Order", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes) return;
+
+        try
+        {
+            database.DeleteHeldOrder(selected.Id);
+            RefreshHoldOrdersList();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Could not delete held order: {ex.Message}", "Delete Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void ModalBackdrop_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource == sender && sender is Grid grid)
+        {
+            grid.Visibility = Visibility.Collapsed;
         }
     }
 
@@ -1720,6 +1878,18 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 return;
             }
+            if (HoldOrderListModal.Visibility == Visibility.Visible)
+            {
+                HoldOrderListModal.Visibility = Visibility.Collapsed;
+                e.Handled = true;
+                return;
+            }
+            if (ReceiptsModal.Visibility == Visibility.Visible)
+            {
+                ReceiptsModal.Visibility = Visibility.Collapsed;
+                e.Handled = true;
+                return;
+            }
             if (AddCustomerModal.Visibility == Visibility.Visible)
             {
                 AddCustomerModal.Visibility = Visibility.Collapsed;
@@ -1758,6 +1928,10 @@ public partial class MainWindow : Window
 
                 // Alt + Z: To close payment submit / modal
                 case System.Windows.Input.Key.Z:
+                    if (HoldOrderListModal.Visibility == Visibility.Visible)
+                        HoldOrderListModal.Visibility = Visibility.Collapsed;
+                    if (ReceiptsModal.Visibility == Visibility.Visible)
+                        ReceiptsModal.Visibility = Visibility.Collapsed;
                     if (CalculatorModal.Visibility == Visibility.Visible)
                         CalculatorModal.Visibility = Visibility.Collapsed;
                     if (AddProductModal.Visibility == Visibility.Visible)

@@ -1162,92 +1162,8 @@
                     </DataGrid>
                 </Grid>
 
-                <!-- Sales/Receipts panel (hidden by default) -->
-                <Grid x:Name="SalesPanel" Visibility="Collapsed" Margin="5">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="54"/>
-                        <RowDefinition Height="100"/>
-                        <RowDefinition Height="35"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="24"/>
-                    </Grid.RowDefinitions>
-                    <DockPanel Grid.Row="0" LastChildFill="True" Margin="0,0,0,10">
-                        <Button DockPanel.Dock="Right" Click="ShowPos_Click"
-                                Content="✕" Width="32" Height="32" Padding="0"
-                                Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
-                                FontSize="13" Foreground="#64748B"
-                                Style="{StaticResource FlatButton}"
-                                Cursor="Hand" Margin="0,0,5,0"/>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Receipts" FontSize="18" FontWeight="Bold" Foreground="#111827"/>
-                            <TextBlock Text="View and manage your sales orders"
-                                       FontSize="12" Foreground="#6B7280" Margin="0,4,0,0"/>
-                        </StackPanel>
-                    </DockPanel>
-                    <DockPanel Grid.Row="1" Margin="0,0,0,8">
-                        <Button Content="‹" Width="32" Margin="0,0,7,8"
-                                Click="PreviousReceiptWeek_Click"
-                                Background="White" BorderBrush="#E1E3EB"
-                                Style="{StaticResource FlatButton}" FontSize="18"/>
-                        <Button x:Name="NextReceiptWeekButton" Content="›" Width="32"
-                                DockPanel.Dock="Right" Margin="7,0,0,8"
-                                Click="NextReceiptWeek_Click"
-                                Background="White" BorderBrush="#E1E3EB"
-                                Style="{StaticResource FlatButton}" FontSize="18"/>
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                      VerticalScrollBarVisibility="Disabled">
-                            <StackPanel x:Name="ReceiptDateButtons" Orientation="Horizontal"/>
-                        </ScrollViewer>
-                    </DockPanel>
-                    <DockPanel Grid.Row="2" Margin="0,0,0,6">
-                        <TextBlock x:Name="SelectedReceiptDateText" FontWeight="Bold" FontSize="13" Foreground="#1E293B"
-                                   VerticalAlignment="Center"/>
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                            <TextBlock x:Name="ReceiptOrderCountText" Foreground="#64748B" FontSize="12"
-                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock Text="•" Foreground="#CBD5E1" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock x:Name="ReceiptDayTotalText" Foreground="#64748B" FontSize="12"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </DockPanel>
-                    <DataGrid x:Name="SalesGrid" Grid.Row="3" AutoGenerateColumns="False"
-                              IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column"
-                              GridLinesVisibility="None" Background="White" BorderBrush="#E2E8F0"
-                              RowHeight="50" ColumnHeaderHeight="40">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="SL"             Binding="{Binding Id}"                                        Width="45"/>
-                            <DataGridTextColumn Header="Order No"       Binding="{Binding ReceiptNumber}"                             Width="1.2*"/>
-                            <DataGridTextColumn Header="Time"           Binding="{Binding CreatedAt, StringFormat={}{0:dd MMM yyyy hh:mm tt}}" Width="1.5*"/>
-                            <DataGridTextColumn Header="Customer Name"  Binding="{Binding CustomerName}"                              Width="1.5*"/>
-                            <DataGridTextColumn Header="Items"          Binding="{Binding ItemCount, StringFormat={}{0} Items}"       Width="*"/>
-                            <DataGridTextColumn Header="Payment Method" Binding="{Binding PaymentMethod}"                             Width="1.2*"/>
-                            <DataGridTextColumn Header="Total Amount"   Binding="{Binding Total, StringFormat=₹{0:N2}}"              Width="1.2*"/>
-                            <DataGridTemplateColumn Header="Status" Width="110">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Border Background="#DCFCE7" CornerRadius="6" Padding="10,4"
-                                                HorizontalAlignment="Left" VerticalAlignment="Center">
-                                            <TextBlock Text="Delivered" Foreground="#15803D" FontSize="11" FontWeight="SemiBold"/>
-                                        </Border>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Action" Width="130">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Button Content="···  View more  ▾" Click="ViewReceipt_Click"
-                                                Padding="10,5" Background="White" Foreground="#2563EB"
-                                                BorderBrush="#DBEAFE" BorderThickness="1"
-                                                FontSize="11.5" FontWeight="SemiBold"
-                                                Style="{StaticResource FlatButton}"/>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <TextBlock Grid.Row="4" x:Name="ReceiptShowingText" Foreground="#64748B"
-                               FontSize="11" VerticalAlignment="Center"/>
-                </Grid>
+                <!-- Sales/Receipts placeholder (legacy) -->
+                <Grid x:Name="SalesPanel" Visibility="Collapsed"/>
             </Grid>
         </Grid>
 
@@ -2091,6 +2007,307 @@
                                 Height="36" Background="#E6F7EB" Foreground="#166534" BorderBrush="#A7DFBF"
                                 FontWeight="SemiBold" FontSize="12" Style="{StaticResource FlatButton}"/>
                     </DockPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== HOLD ORDER LIST MODAL POPUP ==================== -->
+        <Grid x:Name="HoldOrderListModal" Grid.Row="0" Grid.RowSpan="2"
+              Visibility="Collapsed" Background="#66000000" Panel.ZIndex="135"
+              MouseDown="ModalBackdrop_MouseDown">
+            <Border Background="White" CornerRadius="16" Width="960" MaxHeight="660"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Padding="26,22,26,22" Margin="20">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" ShadowDepth="8" Direction="270" Color="#000000" Opacity="0.25"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <DockPanel Grid.Row="0" Margin="0,0,0,16">
+                        <!-- Circular close button -->
+                        <Button DockPanel.Dock="Right" Width="32" Height="32" Padding="0"
+                                Click="CloseHoldOrderList_Click"
+                                Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
+                                Style="{StaticResource FlatButton}" Cursor="Hand">
+                            <TextBlock Text="✕" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Hold order list" FontSize="18" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="Select a hold order to view or resume" FontSize="12.5" Foreground="#6B7280" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- Hold Current Cart Bar (shown when cart has items) -->
+                    <Border x:Name="HoldCurrentCartBar" Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
+                            CornerRadius="8" Padding="12,9" Margin="0,0,0,14" Visibility="Collapsed">
+                        <DockPanel LastChildFill="True">
+                            <Button Content="Hold Current Cart" DockPanel.Dock="Right"
+                                    Click="HoldCurrentCart_Click" Background="#FFF3E2" Foreground="#EA580C"
+                                    BorderBrush="#FED7AA" BorderThickness="1"
+                                    Padding="16,8" FontWeight="SemiBold" FontSize="12" Style="{StaticResource FlatButton}"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Current Customer:" Foreground="#64748B" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBox x:Name="HoldCustomerNameBox" Width="220" Height="32" Padding="8,0"
+                                         VerticalContentAlignment="Center" BorderBrush="#CBD5E1" FontSize="12"
+                                         Text="Walking Customer"/>
+                                <TextBlock x:Name="HoldCartItemsPreviewText" Text="(3 items in cart)" Foreground="#64748B" FontSize="12" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Search & Sort Row (Matches media_1792067890391_be51be21.png) -->
+                    <Grid Grid.Row="2" Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Search Input Box -->
+                        <Border Grid.Column="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                                CornerRadius="8" Padding="14,0" Height="42" Margin="0,0,10,0">
+                            <DockPanel LastChildFill="True">
+                                <TextBlock Text="🔍" FontSize="14" Foreground="#94A3B8"
+                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <Grid VerticalAlignment="Center">
+                                    <TextBox x:Name="HoldOrderSearchBox" BorderThickness="0" Background="Transparent"
+                                             FontSize="13" Foreground="#1F2937" VerticalContentAlignment="Center"
+                                             TextChanged="HoldOrderSearchBox_TextChanged"/>
+                                    <TextBlock Text="Search by Order No., Customer Name or Phone..."
+                                               FontSize="12.5" Foreground="#94A3B8"
+                                               VerticalAlignment="Center" IsHitTestVisible="False">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=HoldOrderSearchBox}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Sort Button -->
+                        <Button Grid.Column="1" Height="42" Padding="16,0"
+                                Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                                Style="{StaticResource FlatButton}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="⇅  Latest First  ▾" FontSize="12.5" FontWeight="SemiBold" Foreground="#1E293B"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- Content Area: Empty State OR Held Orders Grid -->
+                    <Grid Grid.Row="3" MinHeight="260">
+                        <!-- Exact Empty State matching image -->
+                        <StackPanel x:Name="HoldOrderEmptyState"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Margin="20" Visibility="Visible">
+                            <!-- Hourglass in circle -->
+                            <Border Width="64" Height="64" CornerRadius="32"
+                                    Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
+                                    HorizontalAlignment="Center" Margin="0,0,0,16">
+                                <TextBlock Text="⌛" FontSize="26" Foreground="#64748B"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="No hold orders found"
+                                       FontSize="16" FontWeight="Bold" Foreground="#1E293B"
+                                       HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                            <TextBlock Text="Hold orders will appear here when you hold a cart"
+                                       FontSize="12.5" Foreground="#64748B"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- DataGrid when orders exist -->
+                        <DataGrid x:Name="HoldOrdersGrid" AutoGenerateColumns="False"
+                                  IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column"
+                                  GridLinesVisibility="None" Background="White" BorderBrush="#E2E8F0"
+                                  RowHeight="54" ColumnHeaderHeight="42" SelectionMode="Single"
+                                  Visibility="Collapsed">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="PARKED CART / CUSTOMER" Width="2.5*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
+                                                <Border Background="{Binding BadgeColor}" CornerRadius="16" Width="32" Height="32" Margin="0,0,10,0">
+                                                    <TextBlock Text="{Binding CustomerInitials}" FontSize="12" FontWeight="Bold" Foreground="White"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding CustomerName}" FontSize="12.5" FontWeight="Bold" Foreground="#1F2937"/>
+                                                    <TextBlock Text="{Binding TimeAgo, StringFormat='Held {0}'}" FontSize="11" Foreground="#9CA3AF"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="ITEMS IN CART" Width="1.2*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#F1F5F9" CornerRadius="6" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0">
+                                                <TextBlock Text="{Binding ItemCount, StringFormat='🛍 {0} Items'}" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="TOTAL" Width="1.2*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Total, StringFormat=₹{0:N2}}" FontSize="13.5" FontWeight="Bold" Foreground="#16A34A"
+                                                       VerticalAlignment="Center" Margin="8,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTextColumn Header="HELD TIMESTAMP" Binding="{Binding HeldAt, StringFormat={}{0:dd MMM yyyy, hh:mm tt}}" Width="1.8*"/>
+
+                                <DataGridTemplateColumn Header="ACTION" Width="180">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                <Button Content="Resume Order" Click="ResumeHoldOrderRow_Click"
+                                                        Padding="12,6" Background="#289B37" Foreground="White"
+                                                        BorderThickness="0" FontSize="11.5" FontWeight="SemiBold"
+                                                        Style="{StaticResource FlatButton}" Margin="0,0,6,0"/>
+                                                <Button Content="🗑" Click="DeleteHoldOrderRow_Click"
+                                                        Padding="8,6" Background="White" Foreground="#DC2626"
+                                                        BorderBrush="#FECACA" BorderThickness="1" FontSize="12"
+                                                        Style="{StaticResource FlatButton}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
+                    <!-- Footer -->
+                    <DockPanel Grid.Row="4" Margin="2,14,2,0">
+                        <TextBlock x:Name="HoldOrdersCountText" Text="Showing 0 Hold Orders" Foreground="#737B8C" FontSize="11.5" VerticalAlignment="Center"/>
+                    </DockPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== RECEIPTS MODAL POPUP ==================== -->
+        <Grid x:Name="ReceiptsModal" Grid.Row="0" Grid.RowSpan="2"
+              Visibility="Collapsed" Background="#66000000" Panel.ZIndex="135"
+              MouseDown="ModalBackdrop_MouseDown">
+            <Border Background="White" CornerRadius="16" Width="1040" MaxHeight="680"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Padding="26,22,26,22" Margin="20">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" ShadowDepth="8" Direction="270" Color="#000000" Opacity="0.25"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <DockPanel Grid.Row="0" LastChildFill="True" Margin="0,0,0,16">
+                        <!-- Circular close button -->
+                        <Button DockPanel.Dock="Right" Width="32" Height="32" Padding="0"
+                                Click="CloseReceiptsModal_Click"
+                                Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
+                                Style="{StaticResource FlatButton}" Cursor="Hand">
+                            <TextBlock Text="✕" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Receipts" FontSize="18" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="View and manage your sales orders" FontSize="12.5" Foreground="#6B7280" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- Day Cards Row (Horizontal 7 Days) -->
+                    <DockPanel Grid.Row="1" Margin="0,0,0,14">
+                        <Button Content="‹" Width="32" Height="86" Margin="0,0,6,0"
+                                Click="PreviousReceiptWeek_Click"
+                                Background="White" BorderBrush="#E1E3EB"
+                                Style="{StaticResource FlatButton}" FontSize="18"/>
+                        <Button x:Name="NextReceiptWeekButton" Content="›" Width="32" Height="86"
+                                DockPanel.Dock="Right" Margin="6,0,0,0"
+                                Click="NextReceiptWeek_Click"
+                                Background="White" BorderBrush="#E1E3EB"
+                                Style="{StaticResource FlatButton}" FontSize="18"/>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <StackPanel x:Name="ReceiptDateButtons" Orientation="Horizontal"/>
+                        </ScrollViewer>
+                    </DockPanel>
+
+                    <!-- Business Day Summary Strip -->
+                    <DockPanel Grid.Row="2" Margin="0,0,0,12">
+                        <TextBlock x:Name="SelectedReceiptDateText" Text="Orders for Business Day 14 Oct 2026 (Wednesday)"
+                                   FontWeight="Bold" FontSize="13.5" Foreground="#1F2937"
+                                   VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                            <TextBlock x:Name="ReceiptOrderCountText" Text="Total orders: 1"
+                                       Foreground="#64748B" FontSize="12.5" FontWeight="SemiBold"
+                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="•" Foreground="#CBD5E1" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock x:Name="ReceiptDayTotalText" Text="Total Sales: ₹8,190.00"
+                                       Foreground="#64748B" FontSize="12.5" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- DataGrid -->
+                    <DataGrid x:Name="SalesGrid" Grid.Row="3" AutoGenerateColumns="False"
+                              IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column"
+                              GridLinesVisibility="None" Background="White" BorderBrush="#E2E8F0"
+                              RowHeight="50" ColumnHeaderHeight="40" MinHeight="220">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="SL"             Binding="{Binding Id}"                                        Width="45"/>
+                            <DataGridTextColumn Header="Order No"       Binding="{Binding ReceiptNumber}"                             Width="1.2*"/>
+                            <DataGridTextColumn Header="Time"           Binding="{Binding CreatedAt, StringFormat={}{0:dd MMM yyyy hh:mm tt}}" Width="1.5*"/>
+                            <DataGridTextColumn Header="Customer Name"  Binding="{Binding CustomerName}"                              Width="1.5*"/>
+                            <DataGridTextColumn Header="Items"          Binding="{Binding ItemCount, StringFormat={}{0} Items}"       Width="*"/>
+                            <DataGridTextColumn Header="Payment Method" Binding="{Binding PaymentMethod}"                             Width="1.2*"/>
+                            <DataGridTextColumn Header="Total Amount"   Binding="{Binding Total, StringFormat=₹{0:N2}}"              Width="1.2*"/>
+                            <DataGridTemplateColumn Header="Status" Width="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#DCFCE7" CornerRadius="6" Padding="10,4"
+                                                HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <TextBlock Text="Delivered" Foreground="#15803D" FontSize="11" FontWeight="SemiBold"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Action" Width="130">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="···  View more  ▾" Click="ViewReceipt_Click"
+                                                Padding="10,5" Background="White" Foreground="#2563EB"
+                                                BorderBrush="#DBEAFE" BorderThickness="1"
+                                                FontSize="11.5" FontWeight="SemiBold"
+                                                Style="{StaticResource FlatButton}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Footer -->
+                    <TextBlock Grid.Row="4" x:Name="ReceiptShowingText" Text="Showing 1 - 1 of 1 Receipts"
+                               Foreground="#64748B" FontSize="11.5" VerticalAlignment="Center" Margin="2,12,2,0"/>
                 </Grid>
             </Border>
         </Grid>
