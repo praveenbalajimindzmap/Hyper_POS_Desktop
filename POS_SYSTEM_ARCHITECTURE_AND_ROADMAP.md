@@ -42,11 +42,13 @@ Client_Installation_Directory/
     "display_format": "{symbol} {amount:N2}"
   },
   "theme": {
+    "default_mode": "Light",
+    "allow_theme_toggle": true,
     "primary_color": "#289B37",
     "accent_color": "#3B4BD8",
     "header_bg": "#54587E",
-    "surface_bg": "#FFFFFF",
-    "card_bg": "#FAFAFA"
+    "dark_header_bg": "#1E202B",
+    "dark_surface_bg": "#12141A"
   },
   "database": {
     "file_name": "tenant.db",
@@ -60,14 +62,11 @@ Client_Installation_Directory/
   },
   "upi": {
     "merchant_vpa": "store@upi",
-    "merchant_name": "Saraa Boutique"
+    "merchant_name": "Saraa Boutique",
+    "soundbox_device_ip": "192.168.1.105"
   }
 }
 ```
-
-### 2.3 Dynamic Theming in WPF
-* All visual elements in `MainWindow.xaml` and sub-windows reference dynamic resources (e.g. `Background="{DynamicResource PrimaryBrandBrush}"`).
-* On startup, the application reads `tenant.json`, creates `SolidColorBrush` instances from the hex codes, and registers them into `Application.Current.Resources`.
 
 ---
 
@@ -125,16 +124,62 @@ Because the app is built with native C# WPF, it has direct access to Win32 APIs,
   * Dynamic, large UPI QR code for scanning.
   * Promotional slideshow when the register is idle.
 
-### 4.2 Dynamic UPI QR Code & Payment Verification
-* **Offline Generation**: Generates standard NPCI UPI links dynamically:
-  `upi://pay?pa=store@upi&pn=StoreName&am=7442.00&tr=INV1002&cu=INR`
-  Rendered using the embedded offline `QRCoder` library with zero internet dependency.
-* **Auto-Verification Options**:
-  * **Option A**: Integration with smart soundboxes (Paytm, PhonePe) or Pine Labs terminals via local LAN / Bluetooth API.
-  * **Option B**: Polling payment gateway webhooks (Razorpay POS / Cashfree).
-  * **Option C**: Free offline merchant VPA with manual 1-click confirmation by cashier.
+---
 
-### 4.3 WhatsApp / SMS E-Receipts
+### 4.2 Dynamic UPI / QR Code Payment Integration & Soundbox
+* **Offline NPCI String Generation**:
+  ```
+  upi://pay?pa=store@upi&pn=SaraaBoutique&am=7442.00&tr=INV1002&cu=INR
+  ```
+  Rendered using the embedded offline `QRCoder` C# library without needing any internet connection.
+* **Screen Render**:
+  * In `CheckoutWindow.xaml`, selecting UPI renders the instant QR code right in the center with amount `₹7,442.00` and a live 3-minute expiration countdown.
+* **Payment Verification Modes**:
+  1. **Smart Soundbox & Counter Device (Paytm / PhonePe / Pine Labs)**:
+     * When customer pays, the soundbox announces: *"Payment of ₹7,442 received!"*
+     * Sends a local LAN/Bluetooth `SUCCESS` webhook back to the Desktop POS.
+     * C# automatically closes the modal, marks the sale as PAID, and prints the thermal receipt.
+  2. **Payment Gateway Polling (Razorpay POS / Cashfree)**:
+     * C# polls payment status every 1.5s; auto-approves with a green animated checkmark.
+  3. **Zero-MDR Direct Bank UPI**:
+     * Zero transaction fee mode: Cashier verifies audio on their phone and clicks `[✔ Confirm & Print]`.
+
+---
+
+### 4.3 Parked Carts with Visual Customer Badges
+* **The Problem**: Customers often leave the billing counter to pick another dress, try clothes in the fitting room, or fetch their wallet.
+* **The Solution (Modern Held Orders)**:
+  * Cashier presses `[F4]` or clicks **"Hold Order"**.
+  * Prompt pops up: *"Enter Customer Identifier"* (e.g. *"Priya - Pink Silk Saree"* or mobile number).
+  * The current cart clears instantly, ready for the next customer in line.
+* **Visual Top Bar Badge**:
+  * The top bar badge highlights: **`Hold Order (2)`** with an orange pill indicator.
+* **Quick-Recall Flyout Drawer**:
+  * Clicking or hovering over the badge opens an interactive visual drawer:
+    * Card 1: `Priya (3 items • ₹4,200) • Held 4 mins ago` [Resume] [Discard]
+    * Card 2: `Walking Customer (1 item • ₹899) • Held 12 mins ago` [Resume] [Discard]
+  * Clicking **[Resume]** restores the entire cart with all discounts and customer tags in 1 click!
+
+---
+
+### 4.4 Light / Dark / Brand Accent Theme Toggle
+* **Modern Ergonomics**: Cashiers working in dim boutiques or long 10-hour shifts experience severe eye fatigue with bright white backgrounds.
+* **Theme Switching in WPF**:
+  * Uses two swappable `ResourceDictionary` files: `Theme.Light.xaml` and `Theme.Dark.xaml`.
+  * Cashier clicks a moon/sun icon `🌙 / ☀️` in the header bar.
+  * WPF executes:
+    ```csharp
+    Application.Current.Resources.MergedDictionaries.Clear();
+    Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary { 
+        Source = new Uri(isDark ? "Themes/DarkTheme.xaml" : "Themes/LightTheme.xaml", UriKind.Relative) 
+    });
+    ```
+* **Brand Accent Adaptation**:
+  * Both light and dark modes preserve the client's signature brand colors (`PrimaryBrandBrush` from `tenant.json`).
+
+---
+
+### 4.5 WhatsApp / SMS E-Receipts (Paperless POS)
 * Alongside physical 80mm thermal printing, cashier can click **"Send WhatsApp Bill"**.
 * Triggers an automated pre-formatted invoice link sent directly to the customer's mobile number.
 
@@ -192,13 +237,15 @@ Retail stores cannot afford downtime during customer checkout rushes.
 ```mermaid
 flowchart TD
     P1["Phase 1: White-Label Engine & tenant.json"] --> P2["Phase 2: Dynamic UPI QR Code & Soundbox"]
-    P2 --> P3["Phase 3: Dual-Screen Customer Display (CFD)"]
-    P3 --> P4["Phase 4: Flutter Mobile Wi-Fi Handshake"]
-    P4 --> P5["Phase 5: Automated Backups & 1-Click Client Packaging"]
+    P2 --> P3["Phase 3: Parked Carts Drawer & Theme Toggle"]
+    P3 --> P4["Phase 4: Dual-Screen Customer Display (CFD)"]
+    P4 --> P5["Phase 5: Flutter Mobile Wi-Fi Handshake"]
+    P5 --> P6["Phase 6: Automated Backups & 1-Click Client Packaging"]
 ```
 
 * **Phase 1 (White-Label)**: Create `TenantConfig.cs`, convert hardcoded colors to `DynamicResource`, support dynamic currency (`₹`, `$`, `S$`).
 * **Phase 2 (UPI & Payment)**: Implement on-screen dynamic UPI QR code generator (`QRCoder`) and payment confirmation flow.
-* **Phase 3 (CFD)**: Design `CustomerDisplayWindow.xaml` and multi-monitor detection logic.
-* **Phase 4 (Flutter Sync)**: Add local WebSocket listener on the desktop POS to receive camera scans from the Flutter mobile app.
-* **Phase 5 (Packaging & Security)**: Create automated PowerShell build script to generate branded portable zip packages per client.
+* **Phase 3 (Parked Carts & Theming)**: Add visual customer badges for held orders with quick-recall flyout drawer, plus Light/Dark mode switcher.
+* **Phase 4 (CFD)**: Design `CustomerDisplayWindow.xaml` and multi-monitor detection logic.
+* **Phase 5 (Flutter Sync)**: Add local WebSocket listener on the desktop POS to receive camera scans from the Flutter mobile app.
+* **Phase 6 (Packaging & Security)**: Create automated PowerShell build script to generate branded portable zip packages per client.
