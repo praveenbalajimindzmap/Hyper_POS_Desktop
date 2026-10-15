@@ -356,11 +356,11 @@
         <DataTemplate x:Key="ProductCardTemplate">
             <Button Click="ProductCard_Click"
                     Background="White" BorderBrush="#E5E7EB"
-                    BorderThickness="1" Padding="7,7,7,8"
+                    BorderThickness="1" Padding="8,8,8,10"
                     Margin="4,0,4,8"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top"
-                    Height="228" Cursor="Hand"
+                    VerticalAlignment="Stretch"
+                    Cursor="Hand"
                     FocusVisualStyle="{x:Null}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
@@ -384,12 +384,13 @@
                 </Button.Template>
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="114"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Product Image area -->
-                    <Border Grid.Row="0" CornerRadius="6" ClipToBounds="True" Background="#F3F4F6">
+                    <!-- Product Image area (1:1 Ratio) -->
+                    <Border Grid.Row="0" CornerRadius="6" ClipToBounds="True" Background="#F3F4F6"
+                            Height="{Binding ActualWidth, RelativeSource={RelativeSource Self}}">
                         <Grid>
                             <!-- Fallback shopping bag icon -->
                             <Path Width="28" Height="30" Stretch="Fill"
@@ -448,18 +449,18 @@
                     </Border>
 
                     <!-- Product Info -->
-                    <StackPanel Grid.Row="1" Margin="0,5,0,0">
+                    <StackPanel Grid.Row="1" Margin="0,6,0,0">
                         <!-- SKU + Category -->
                         <TextBlock Text="{Binding SkuCategoryLine}"
                                    FontSize="10" Foreground="#858D9D"
-                                   TextTrimming="CharacterEllipsis" Margin="0,0,0,2"/>
+                                   TextTrimming="CharacterEllipsis" Margin="0,0,0,3"/>
                         <!-- Name -->
                         <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold"
                                    Foreground="#1F2937" TextWrapping="Wrap"
-                                   MaxHeight="30" LineHeight="15" TextTrimming="CharacterEllipsis"
-                                   Margin="0,0,0,8"/>
+                                   MinHeight="32" MaxHeight="32" LineHeight="16" TextTrimming="CharacterEllipsis"
+                                   Margin="0,0,0,6"/>
                         <!-- Original price (strikethrough red dashed price) -->
-                        <TextBlock FontSize="10.5" Foreground="#DC2626" Margin="0,0,0,2"
+                        <TextBlock FontSize="10.5" Foreground="#DC2626" Margin="0,0,0,3"
                                    Visibility="{Binding HasDiscount, Converter={StaticResource BoolToVisibilityConverter}}">
                             <TextBlock.TextDecorations>
                                 <TextDecorationCollection>
