@@ -41,7 +41,10 @@ public sealed class Product : INotifyPropertyChanged
 
     public string DealBadge => "Deal Of The Day";
     public bool HasDealBadge => true;
-    public string StockBadgeColor => Stock <= 0 ? "#DC2626" : "#16A34A";
+    public bool IsOutOfStock => Stock <= 0;
+    public bool IsLowStock => Stock > 0 && Stock <= 5;
+    public string StockBadgeColor => IsOutOfStock ? "#DC2626" : (IsLowStock ? "#D97706" : "#16A34A");
+    public string StockBadgeText => IsOutOfStock ? "0 In Stock" : (IsLowStock ? $"⚡ Low Stock ({Stock})" : $"{Stock} In Stock");
     public string SkuCategoryLine => string.IsNullOrWhiteSpace(Category) || Category == "All" 
         ? Sku 
         : $"{Sku} • {Category}";

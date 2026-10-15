@@ -39,13 +39,50 @@
         <DataGrid x:Name="OrdersGrid" Grid.Row="3" AutoGenerateColumns="False"
                   IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column"
                   GridLinesVisibility="None" Background="White" BorderBrush="#E2E5EC"
-                  RowHeight="48" ColumnHeaderHeight="40" SelectionMode="Single"
+                  RowHeight="56" ColumnHeaderHeight="42" SelectionMode="Single"
                   MouseDoubleClick="OrdersGrid_MouseDoubleClick">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="CUSTOMER / ORDER" Binding="{Binding CustomerName}" Width="2*"/>
-                <DataGridTextColumn Header="ITEMS" Binding="{Binding ItemCount}" Width="*"/>
-                <DataGridTextColumn Header="TOTAL" Binding="{Binding Total, StringFormat=₹{0:N2}}" Width="*"/>
-                <DataGridTextColumn Header="HELD ON" Binding="{Binding HeldAt, StringFormat={}{0:dd MMM, hh:mm tt}}" Width="2*"/>
+                <!-- Visual Customer Badge Column -->
+                <DataGridTemplateColumn Header="PARKED CART / CUSTOMER" Width="2.5*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
+                                <Border Background="{Binding BadgeColor}" CornerRadius="18" Width="36" Height="36" Margin="0,0,10,0">
+                                    <TextBlock Text="{Binding CustomerInitials}" FontSize="13" FontWeight="Bold" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding CustomerName}" FontSize="13" FontWeight="Bold" Foreground="#1F2937"/>
+                                    <TextBlock Text="{Binding TimeAgo, StringFormat='Held {0}'}" FontSize="11" Foreground="#9CA3AF"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Items Badge -->
+                <DataGridTemplateColumn Header="ITEMS IN CART" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border Background="#F1F5F9" CornerRadius="6" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0">
+                                <TextBlock Text="{Binding ItemCount, StringFormat='🛒 {0} Items'}" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569"/>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Amount -->
+                <DataGridTemplateColumn Header="TOTAL" Width="1.2*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Total, StringFormat=₹{0:N2}}" FontSize="14" FontWeight="Bold" Foreground="#16A34A"
+                                       VerticalAlignment="Center" Margin="8,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Date / Time -->
+                <DataGridTextColumn Header="HELD TIMESTAMP" Binding="{Binding HeldAt, StringFormat={}{0:dd MMM yyyy, hh:mm tt}}" Width="1.8*"/>
             </DataGrid.Columns>
         </DataGrid>
         <DockPanel Grid.Row="4" Margin="2,12,2,0">

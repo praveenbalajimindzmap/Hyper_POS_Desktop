@@ -28,6 +28,17 @@ public partial class MainWindow : Window
     private string extraDiscountType = "percent";
     private Coupon? activeCoupon;
     private decimal currentPayableTotal;
+    private LocalScannerGateway? scannerGateway;
+    private CustomerDisplayWindow? customerDisplayWindow;
+    private decimal currentGstRate = 5m;
+    private bool isDarkMode;
+
+    // Inbuilt Desk Calculator State
+    private string calcDisplay = "0";
+    private decimal calcFirstOperand = 0m;
+    private string? calcPendingOp;
+    private bool calcIsNewEntry = true;
+
     private readonly List<Coupon> availableCoupons = new()
     {
         new Coupon { Code = "SARAA10", Title = "10% Storewide Off", DiscountType = "percent", Discount = 10, MinPurchase = 500 },
@@ -75,6 +86,29 @@ public partial class MainWindow : Window
         RefreshSales();
         UpdateCartSummary();
         LoadRecentCustomers();
+
+        // Start Local Wi-Fi Scanner Gateway for Mobile/Flutter App scans
+        try
+        {
+            scannerGateway = new LocalScannerGateway(8085);
+            scannerGateway.OnBarcodeReceived += (barcode) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    try { System.Media.SystemSounds.Beep.Play(); } catch { }
+                    ScanProductByCode(barcode);
+                });
+            };
+            scannerGateway.Start();
+        }
+        catch { }
+    }
+
+    public void ScanProductByCode(string barcode)
+    {
+        if (string.IsNullOrWhiteSpace(barcode)) return;
+        ScanBox.Text = barcode.Trim();
+        ScanProduct();
     }
 
     private void RefreshCatalog()
@@ -458,16 +492,28 @@ public partial class MainWindow : Window
         }
 
         var totalDiscount = productDiscountTotal + extraDiscount + couponDiscount;
-        currentPayableTotal = Math.Max(0, grossTotal - totalDiscount);
+        var taxableAmount = Math.Max(0, grossTotal - totalDiscount);
+        var gstAmount = Math.Round(taxableAmount * (currentGstRate / 100m), 2);
+        var cgst = Math.Round(gstAmount / 2m, 2);
+        var sgst = gstAmount - cgst;
+        currentPayableTotal = taxableAmount + gstAmount;
 
         var culture = new System.Globalization.CultureInfo("en-IN");
         CartCountText.Text = $"{cart.Count} Items ({count} Units)";
         SubtotalText.Text = grossTotal.ToString("C2", culture);
         DiscountText.Text = totalDiscount > 0 ? $"- {totalDiscount.ToString("C2", culture)}" : "- ₹0.00";
         TotalText.Text = currentPayableTotal.ToString("C2", culture);
-        GstText.Text = "₹0.00";
+        GstText.Text = currentGstRate > 0
+            ? $"₹{gstAmount:N2} ({currentGstRate:0}%: CGST ₹{cgst:N2} + SGST ₹{sgst:N2})"
+            : "₹0.00 (0% Exempt)";
         CheckoutButton.IsEnabled = cart.Count > 0;
         CheckoutButton.Opacity = cart.Count > 0 ? 1 : 0.55;
+
+        // Mirror to Customer-Facing Display if active
+        if (customerDisplayWindow != null && customerDisplayWindow.IsLoaded)
+        {
+            customerDisplayWindow.UpdateCart(cart, grossTotal, totalDiscount, currentPayableTotal, gstAmount);
+        }
 
         // Sync product catalog overlay quantities
         if (ProductCatalog?.ItemsSource is IEnumerable<Product> catalogProducts)
@@ -488,7 +534,7 @@ public partial class MainWindow : Window
             return;
 
         var total = currentPayableTotal > 0 ? currentPayableTotal : cart.Sum(item => item.LineTotal);
-        var checkout = new CheckoutWindow(total, pendingCustomerName) { Owner = this };
+        var checkout = new CheckoutWindow(total, pendingCustomerName, selectedCustomer?.Phone ?? "") { Owner = this };
         if (checkout.ShowDialog() != true)
             return;
 
@@ -506,6 +552,8 @@ public partial class MainWindow : Window
             RefreshProducts();
             return;
         }
+
+        checkout.LaunchWhatsAppReceipt(receiptNumber, total);
 
         cart.Clear();
         selectedCustomer = null;
@@ -937,7 +985,241 @@ public partial class MainWindow : Window
             RecentCustomersPanel.Children.Add(chip);
         }
     }
+
+    private void CustomerSearch_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        var phoneQuery = NewCustomerPhoneBox?.Text?.Trim() ?? "";
+        var nameQuery = NewCustomerNameBox?.Text?.Trim() ?? "";
+        var query = !string.IsNullOrWhiteSpace(phoneQuery) ? phoneQuery : nameQuery;
+
+        if (RecentCustomersPanel == null) return;
+        RecentCustomersPanel.Children.Clear();
+        var matched = database.GetCustomers(string.IsNullOrWhiteSpace(query) ? null : query);
+
+        foreach (var customer in matched.Take(10))
+        {
+            var chip = new Button
+            {
+                Content = $"{customer.Name}{(string.IsNullOrWhiteSpace(customer.Phone) ? "" : " • " + customer.Phone)}",
+                Tag = customer,
+                Margin = new Thickness(0, 0, 6, 6),
+                Padding = new Thickness(10, 5, 10, 5),
+                Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                BorderThickness = new Thickness(1),
+                FontSize = 11.5,
+                Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59)),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Style = (Style)FindResource("FlatButton")
+            };
+            chip.Click += (s, ev) =>
+            {
+                if (s is Button btn && btn.Tag is Customer cust)
+                {
+                    SelectCustomer(cust);
+                    AddCustomerModal.Visibility = Visibility.Collapsed;
+                }
+            };
+            RecentCustomersPanel.Children.Add(chip);
+        }
+    }
     #endregion
+
+    #region Tax Management (GST Slabs)
+    private void GstSlab_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is RadioButton rb && rb.Tag is string tag && decimal.TryParse(tag, out var rate))
+        {
+            currentGstRate = rate;
+            UpdateCartSummary();
+        }
+    }
+    #endregion
+
+    #region Customer-Facing Display (CFD)
+    private void ToggleCustomerDisplay_Click(object sender, RoutedEventArgs e)
+    {
+        if (customerDisplayWindow == null || !customerDisplayWindow.IsLoaded)
+        {
+            customerDisplayWindow = new CustomerDisplayWindow();
+            if (SystemParameters.VirtualScreenWidth > SystemParameters.PrimaryScreenWidth)
+            {
+                customerDisplayWindow.WindowStartupLocation = WindowStartupLocation.Manual;
+                customerDisplayWindow.Left = SystemParameters.PrimaryScreenWidth + 20;
+                customerDisplayWindow.Top = 40;
+                customerDisplayWindow.WindowState = WindowState.Maximized;
+            }
+            customerDisplayWindow.Show();
+            UpdateCartSummary();
+        }
+        else
+        {
+            customerDisplayWindow.Close();
+            customerDisplayWindow = null;
+        }
+    }
+    #endregion
+
+    #region Desk Calculator Handlers
+    private void ToggleCalculator_Click(object sender, RoutedEventArgs e)
+    {
+        CalculatorModal.Visibility = CalculatorModal.Visibility == Visibility.Visible
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+    }
+
+    private void CloseCalculator_Click(object sender, RoutedEventArgs e)
+    {
+        CalculatorModal.Visibility = Visibility.Collapsed;
+    }
+
+    private void CalcBtn_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn) return;
+        var text = btn.Content.ToString() ?? "";
+
+        if (text is "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9")
+        {
+            if (calcIsNewEntry || calcDisplay == "0")
+            {
+                calcDisplay = text;
+                calcIsNewEntry = false;
+            }
+            else
+            {
+                calcDisplay += text;
+            }
+            CalcDisplayText.Text = calcDisplay;
+        }
+        else if (text == ".")
+        {
+            if (calcIsNewEntry)
+            {
+                calcDisplay = "0.";
+                calcIsNewEntry = false;
+            }
+            else if (!calcDisplay.Contains('.'))
+            {
+                calcDisplay += ".";
+            }
+            CalcDisplayText.Text = calcDisplay;
+        }
+        else if (text == "C")
+        {
+            calcDisplay = "0";
+            calcFirstOperand = 0m;
+            calcPendingOp = null;
+            calcIsNewEntry = true;
+            CalcDisplayText.Text = "0";
+            CalcHistoryText.Text = "";
+        }
+        else if (text == "CE")
+        {
+            calcDisplay = "0";
+            calcIsNewEntry = true;
+            CalcDisplayText.Text = "0";
+        }
+        else if (text == "⌫")
+        {
+            if (!calcIsNewEntry && calcDisplay.Length > 1)
+            {
+                calcDisplay = calcDisplay.Substring(0, calcDisplay.Length - 1);
+            }
+            else
+            {
+                calcDisplay = "0";
+                calcIsNewEntry = true;
+            }
+            CalcDisplayText.Text = calcDisplay;
+        }
+        else if (text is "+" or "-" or "×" or "÷")
+        {
+            decimal.TryParse(calcDisplay, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var currentVal);
+            calcFirstOperand = currentVal;
+            calcPendingOp = text;
+            calcIsNewEntry = true;
+            CalcHistoryText.Text = $"{calcFirstOperand} {calcPendingOp}";
+        }
+        else if (text == "%")
+        {
+            if (decimal.TryParse(calcDisplay, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var val))
+            {
+                val /= 100m;
+                calcDisplay = val.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                CalcDisplayText.Text = calcDisplay;
+            }
+        }
+        else if (text == "=")
+        {
+            if (calcPendingOp != null && decimal.TryParse(calcDisplay, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var secondVal))
+            {
+                decimal result = calcPendingOp switch
+                {
+                    "+" => calcFirstOperand + secondVal,
+                    "-" => calcFirstOperand - secondVal,
+                    "×" => calcFirstOperand * secondVal,
+                    "÷" => secondVal != 0 ? calcFirstOperand / secondVal : 0m,
+                    _ => secondVal
+                };
+                CalcHistoryText.Text = $"{calcFirstOperand} {calcPendingOp} {secondVal} =";
+                calcDisplay = result.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                CalcDisplayText.Text = calcDisplay;
+                calcPendingOp = null;
+                calcIsNewEntry = true;
+            }
+        }
+    }
+
+    private void CopyCalcValue_Click(object sender, RoutedEventArgs e)
+    {
+        try { Clipboard.SetText(calcDisplay); } catch { }
+        ScanBox.Text = calcDisplay;
+        CalculatorModal.Visibility = Visibility.Collapsed;
+        ScanBox.Focus();
+        ScanBox.SelectAll();
+    }
+    #endregion
+
+    #region Theme Toggle (Light / Dark Mode)
+    private void ToggleTheme_Click(object sender, RoutedEventArgs e)
+    {
+        isDarkMode = !isDarkMode;
+        ApplyTheme(isDarkMode);
+    }
+
+    private void ApplyTheme(bool dark)
+    {
+        if (dark)
+        {
+            Background = new SolidColorBrush(Color.FromRgb(18, 24, 38)); // Dark navy / slate
+            ThemeToggleButton.Content = "☀️";
+            ThemeToggleButton.ToolTip = "Switch to Light Mode";
+        }
+        else
+        {
+            Background = new SolidColorBrush(Color.FromRgb(239, 239, 239)); // Light gray
+            ThemeToggleButton.Content = "🌙";
+            ThemeToggleButton.ToolTip = "Switch to Dark Mode";
+        }
+    }
+    #endregion
+
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        try
+        {
+            scannerGateway?.Stop();
+            scannerGateway?.Dispose();
+        }
+        catch { }
+
+        try
+        {
+            customerDisplayWindow?.Close();
+        }
+        catch { }
+    }
 
     #region Shortcut Keys Modal Handlers
     private void OpenShortCutKeys_Click(object sender, RoutedEventArgs e)
@@ -1389,6 +1671,12 @@ public partial class MainWindow : Window
         // Escape closes any open modal
         if (key == System.Windows.Input.Key.Escape)
         {
+            if (CalculatorModal.Visibility == Visibility.Visible)
+            {
+                CalculatorModal.Visibility = Visibility.Collapsed;
+                e.Handled = true;
+                return;
+            }
             if (AddProductModal.Visibility == Visibility.Visible)
             {
                 AddProductModal.Visibility = Visibility.Collapsed;
@@ -1419,6 +1707,12 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 return;
             }
+            if (SalesPanel.Visibility == Visibility.Visible || ProductsPanel.Visibility == Visibility.Visible)
+            {
+                ShowPos_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                return;
+            }
         }
 
         if (alt)
@@ -1445,6 +1739,8 @@ public partial class MainWindow : Window
 
                 // Alt + Z: To close payment submit / modal
                 case System.Windows.Input.Key.Z:
+                    if (CalculatorModal.Visibility == Visibility.Visible)
+                        CalculatorModal.Visibility = Visibility.Collapsed;
                     if (AddProductModal.Visibility == Visibility.Visible)
                         AddProductModal.Visibility = Visibility.Collapsed;
                     if (ExtraDiscountModal.Visibility == Visibility.Visible)
@@ -1458,9 +1754,21 @@ public partial class MainWindow : Window
                     e.Handled = true;
                     break;
 
-                // Alt + C: To click cancel cart item all
+                // Alt + C: Toggle POS Calculator
                 case System.Windows.Input.Key.C:
-                    ClearCart_Click(this, new RoutedEventArgs());
+                    ToggleCalculator_Click(this, new RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+
+                // Alt + M: Toggle Customer-Facing Display (CFD)
+                case System.Windows.Input.Key.M:
+                    ToggleCustomerDisplay_Click(this, new RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+
+                // Alt + T: Toggle Light / Dark Theme
+                case System.Windows.Input.Key.T:
+                    ToggleTheme_Click(this, new RoutedEventArgs());
                     e.Handled = true;
                     break;
 
