@@ -278,8 +278,9 @@
             <Button Click="ProductCard_Click"
                     Background="White" BorderBrush="#E5E7EB"
                     BorderThickness="1" Padding="8,8,8,10"
-                    Margin="0,0,8,10"
-                    Width="176" MinHeight="288" Cursor="Hand"
+                    Margin="4,0,4,10"
+                    HorizontalAlignment="Stretch"
+                    MinHeight="288" Cursor="Hand"
                     FocusVisualStyle="{x:Null}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
@@ -463,11 +464,32 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- Three-dot menu button -->
-                    <Button x:Name="DayEndButton" Content="⋮" Click="DayEnd_Click"
+                    <!-- Three-dot menu button with dropdown -->
+                    <Button x:Name="DayEndButton" Click="DayEndButton_Click"
                             Width="34" Height="34" Padding="0"
                             Style="{StaticResource FlatButton}" Margin="0,0,8,0"
-                            FontSize="16" Foreground="#6B7280"/>
+                            ToolTip="Settlement Menu">
+                        <TextBlock Text="⋮" FontSize="16" FontWeight="Bold" Foreground="#6B7280"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="SettlementContextMenu" Background="White" BorderBrush="#E2E8F0" BorderThickness="1">
+                                <MenuItem Click="ShiftSettlement_Click">
+                                    <MenuItem.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="⏱  Shift Settlement" FontSize="12.5" FontWeight="SemiBold" Foreground="#1F2937"/>
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Click="DayEnd_Click">
+                                    <MenuItem.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="📅  Day End Settlement" FontSize="12.5" FontWeight="SemiBold" Foreground="#1F2937"/>
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
 
                     <!-- Hold Order 0 button (orange pill) -->
                     <Button x:Name="HoldOrdersButton" Click="HoldOrders_Click"
@@ -588,8 +610,9 @@
         <!-- ==================== MAIN BODY ==================== -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="CartColumn" Width="34*"/>
-                <ColumnDefinition Width="66*"/>
+                <ColumnDefinition x:Name="CartColumn" Width="380" MinWidth="320" MaxWidth="650"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <!-- ============ LEFT: CART PANEL ============ -->
@@ -1003,8 +1026,21 @@
                 </Grid>
             </Border>
 
+            <!-- ============ RESIZABLE SPLITTER (EXPANDABLE BILLING DESIGN) ============ -->
+            <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                          Background="Transparent" Cursor="SizeWE" ShowsPreview="False">
+                <GridSplitter.Template>
+                    <ControlTemplate TargetType="{x:Type GridSplitter}">
+                        <Border Background="Transparent" Width="8">
+                            <Border Width="3" Height="40" Background="#CBD5E1" CornerRadius="1.5"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </GridSplitter.Template>
+            </GridSplitter>
+
             <!-- ============ RIGHT: PRODUCTS PANEL ============ -->
-            <Grid Grid.Column="1">
+            <Grid Grid.Column="2" Margin="4,0,0,0">
                 <!-- POS panel -->
                 <Grid x:Name="PosPanel">
                     <Grid.RowDefinitions>
@@ -1106,7 +1142,7 @@
                                       ItemTemplate="{StaticResource ProductCardTemplate}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel/>
+                                    <UniformGrid Columns="5"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
@@ -2308,6 +2344,319 @@
                     <!-- Footer -->
                     <TextBlock Grid.Row="4" x:Name="ReceiptShowingText" Text="Showing 1 - 1 of 1 Receipts"
                                Foreground="#64748B" FontSize="11.5" VerticalAlignment="Center" Margin="2,12,2,0"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== DAY END SETTLEMENT MODAL POPUP ==================== -->
+        <Grid x:Name="DayEndSettlementModal" Grid.Row="0" Grid.RowSpan="2"
+              Visibility="Collapsed" Background="#66000000" Panel.ZIndex="140"
+              MouseDown="ModalBackdrop_MouseDown">
+            <Border Background="White" CornerRadius="16" Width="1100" MaxHeight="720"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Padding="26,22,26,22" Margin="16">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" ShadowDepth="8" Direction="270" Color="#000000" Opacity="0.25"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Header -->
+                        <RowDefinition Height="Auto"/> <!-- 6-Col Info Strip -->
+                        <RowDefinition Height="*"/>    <!-- 3-Column Content -->
+                        <RowDefinition Height="Auto"/> <!-- Action Bar -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <DockPanel Grid.Row="0" LastChildFill="True" Margin="0,0,0,14">
+                        <Button DockPanel.Dock="Right" Width="32" Height="32" Padding="0"
+                                Click="CloseDayEndModal_Click"
+                                Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
+                                Style="{StaticResource FlatButton}" Cursor="Hand">
+                            <TextBlock Text="✕" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Day End Settlement" FontSize="18" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="Close the business day, review all transactions and settle the day's sales."
+                                       FontSize="12" Foreground="#6B7280" Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- Top 6-Column Summary Info Strip -->
+                    <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
+                            CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
+                        <UniformGrid Columns="6">
+                            <!-- 1. Business Day -->
+                            <StackPanel Margin="4,0">
+                                <TextBlock Text="Business Day" FontSize="10" Foreground="#82899A"/>
+                                <TextBlock x:Name="DayEndBusinessDateText" Text="14 Oct 2026 - 06:15 PM"
+                                           FontSize="11.5" FontWeight="Bold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="DayEndDayOfWeekText" Text="Wednesday" FontSize="10.5" Foreground="#64748B"/>
+                            </StackPanel>
+
+                            <!-- 2. Business Hours -->
+                            <StackPanel Margin="4,0">
+                                <TextBlock Text="Business Hours" FontSize="10" Foreground="#82899A"/>
+                                <TextBlock x:Name="DayEndHoursText" Text="12:34 PM - 06:15 PM"
+                                           FontSize="11.5" FontWeight="Bold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="DayEndDurationText" Text="29h 41m" FontSize="10.5" Foreground="#64748B"/>
+                            </StackPanel>
+
+                            <!-- 3. Total Orders -->
+                            <StackPanel Margin="4,0">
+                                <TextBlock Text="Total orders" FontSize="10" Foreground="#82899A"/>
+                                <TextBlock x:Name="DayEndTotalOrdersText" Text="1 (6 Items)"
+                                           FontSize="12" FontWeight="Bold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <!-- 4. Store -->
+                            <StackPanel Margin="4,0">
+                                <TextBlock Text="Store" FontSize="10" Foreground="#82899A"/>
+                                <TextBlock Text="Saraa Boutique" FontSize="12" FontWeight="Bold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                                <TextBlock Text="Terminal 1" FontSize="10.5" Foreground="#64748B"/>
+                            </StackPanel>
+
+                            <!-- 5. Cashier -->
+                            <StackPanel Margin="4,0">
+                                <TextBlock Text="Cashier" FontSize="10" Foreground="#82899A"/>
+                                <TextBlock x:Name="DayEndCashierText" Text="Praveen Balaji"
+                                           FontSize="12" FontWeight="Bold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                                <TextBlock Text="Shift: #3-PM" FontSize="10.5" Foreground="#64748B"/>
+                            </StackPanel>
+
+                            <!-- 6. Status -->
+                            <StackPanel Margin="4,0" VerticalAlignment="Center">
+                                <TextBlock Text="Status" FontSize="10" Foreground="#82899A" Margin="0,0,0,3"/>
+                                <Border Background="#EEF2FF" CornerRadius="6" Padding="8,4" HorizontalAlignment="Left">
+                                    <TextBlock Text="Ready to Close" FontSize="11" FontWeight="SemiBold" Foreground="#3B4BD8"/>
+                                </Border>
+                            </StackPanel>
+                        </UniformGrid>
+                    </Border>
+
+                    <!-- 3-Column Content Body -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1.25*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Column 1: Payment Summary -->
+                        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,10,0">
+                            <StackPanel>
+                                <TextBlock Text="Payment Summary" FontSize="13.5" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,8"/>
+                                <!-- Top breakdown table -->
+                                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="Total Sales (Incl. Tax)" FontSize="12" Foreground="#64748B"/>
+                                            <TextBlock x:Name="DayEndGrossSalesText" Text="₹8,100.00" DockPanel.Dock="Right" FontSize="12.5" FontWeight="SemiBold" Foreground="#1E293B"/>
+                                        </DockPanel>
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="Product Discount" FontSize="12" Foreground="#64748B"/>
+                                            <TextBlock x:Name="DayEndProductDiscountText" Text="- ₹910.00" DockPanel.Dock="Right" FontSize="12.5" FontWeight="SemiBold" Foreground="#16A34A"/>
+                                        </DockPanel>
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="Coupon Discount" FontSize="12" Foreground="#64748B"/>
+                                            <TextBlock Text="₹0.00" DockPanel.Dock="Right" FontSize="12.5" FontWeight="SemiBold" Foreground="#16A34A"/>
+                                        </DockPanel>
+                                        <DockPanel Margin="0,0,0,10">
+                                            <TextBlock Text="Total Refunds" FontSize="12" Foreground="#64748B"/>
+                                            <TextBlock Text="₹0.00" DockPanel.Dock="Right" FontSize="12.5" FontWeight="SemiBold" Foreground="#1E293B"/>
+                                        </DockPanel>
+                                        <!-- Net Sales Highlight Row -->
+                                        <Border Background="#EEF2FF" CornerRadius="6" Padding="8,6">
+                                            <DockPanel>
+                                                <TextBlock Text="Net Sales" FontSize="12.5" FontWeight="Bold" Foreground="#1E3A8A"/>
+                                                <TextBlock x:Name="DayEndNetSalesText" Text="₹8,190.00" DockPanel.Dock="Right" FontSize="13.5" FontWeight="Bold" Foreground="#3B4BD8"/>
+                                            </DockPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Payment Method Breakdown -->
+                                <TextBlock Text="Payment Method" FontSize="13.5" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,8"/>
+                                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="0">
+                                    <DataGrid x:Name="DayEndPaymentsGrid" AutoGenerateColumns="False" IsReadOnly="True"
+                                              CanUserAddRows="False" HeadersVisibility="Column" RowHeight="32"
+                                              ColumnHeaderHeight="32" GridLinesVisibility="None" Background="White"
+                                              BorderThickness="0">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Payment Method" Binding="{Binding PaymentMethod}" Width="*"/>
+                                            <DataGridTextColumn Header="Orders" Binding="{Binding OrderCount}" Width="55"/>
+                                            <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, StringFormat=₹{0:N2}}" Width="75"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Column 2: Cash Count -->
+                        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Margin="4,0,10,0">
+                            <StackPanel>
+                                <TextBlock Text="Cash Count" FontSize="13.5" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,8"/>
+                                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="0" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <!-- Header row -->
+                                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="10,6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="1.2*"/>
+                                                    <ColumnDefinition Width="0.9*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="Denomination" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                                                <TextBlock Grid.Column="1" Text="Value (₹)" FontSize="11" FontWeight="SemiBold" Foreground="#64748B"/>
+                                                <TextBlock Grid.Column="2" Text="Quantity" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center"/>
+                                                <TextBlock Grid.Column="3" Text="Total (₹)" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Right"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Denominations List -->
+                                        <ItemsControl x:Name="DayEndDenominationsList">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderBrush="#F1F5F9" BorderThickness="0,0,0,1" Padding="10,4">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="1.2*"/>
+                                                                <ColumnDefinition Width="0.9*"/>
+                                                                <ColumnDefinition Width="1*"/>
+                                                                <ColumnDefinition Width="1*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="11.5" Foreground="#1E293B" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding Denomination, StringFormat={}{0:N2}}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center"/>
+                                                            <TextBox Grid.Column="2" Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}"
+                                                                     Width="46" Height="26" Padding="4,0" TextAlignment="Center"
+                                                                     VerticalContentAlignment="Center" FontSize="12"
+                                                                     BorderBrush="#CBD5E1" HorizontalAlignment="Center"/>
+                                                            <TextBlock Grid.Column="3" Text="{Binding Total, StringFormat=₹{0:N2}}"
+                                                                       FontSize="12" FontWeight="SemiBold" Foreground="#1E293B"
+                                                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <!-- Total Cash Counted row -->
+                                        <Border Background="#F8FAFC" Padding="10,8">
+                                            <DockPanel>
+                                                <TextBlock Text="Total Cash Counted" FontSize="12" FontWeight="Bold" Foreground="#1E3A8A"/>
+                                                <TextBlock x:Name="DayEndTotalCashCountedText" Text="₹0.00" DockPanel.Dock="Right"
+                                                           FontSize="13.5" FontWeight="Bold" Foreground="#3B4BD8"/>
+                                            </DockPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Notes (Optional) -->
+                                <TextBlock Text="Notes (Optional) 0/500" FontSize="11.5" Foreground="#64748B" Margin="0,0,0,4"/>
+                                <TextBox x:Name="DayEndNotesBox" Height="48" Padding="8,6"
+                                         TextWrapping="Wrap" AcceptsReturn="True"
+                                         VerticalContentAlignment="Top" BorderBrush="#E2E8F0"
+                                         FontSize="11.5" Foreground="#1F2937"
+                                         Text="Enter the notes..."/>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Column 3: Cash Reconciliation & Sales Information -->
+                        <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <!-- Card 1: Cash Reconciliation -->
+                                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="Cash Reconciliation" FontSize="13" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,8"/>
+                                        <DockPanel Margin="0,0,0,2">
+                                            <TextBlock Text="Expected Cash Amount" FontSize="11.5" Foreground="#64748B"/>
+                                            <TextBlock x:Name="DayEndExpectedCashText" Text="₹105.00" DockPanel.Dock="Right" FontSize="12.5" FontWeight="Bold" Foreground="#1E293B"/>
+                                        </DockPanel>
+                                        <TextBlock Text="(From Cash Sales + Opening Cash ₹100.00)" FontSize="10" Foreground="#94A3B8" FontStyle="Italic" Margin="0,0,0,8"/>
+
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="Counted Cash Amount" FontSize="11.5" Foreground="#64748B"/>
+                                            <TextBlock x:Name="DayEndReconciliationCountedText" Text="₹0.00" DockPanel.Dock="Right" FontSize="12.5" FontWeight="Bold" Foreground="#1E293B"/>
+                                        </DockPanel>
+
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="Difference" FontSize="12" FontWeight="Bold" Foreground="#DC2626"/>
+                                            <TextBlock x:Name="DayEndDifferenceText" Text="₹105.00" DockPanel.Dock="Right" FontSize="13.5" FontWeight="Bold" Foreground="#DC2626"/>
+                                        </DockPanel>
+
+                                        <DockPanel Margin="0,4,0,0">
+                                            <TextBlock Text="Difference Reason" FontSize="11" Foreground="#64748B" VerticalAlignment="Center"/>
+                                            <ComboBox x:Name="DayEndDifferenceReasonCombo" DockPanel.Dock="Right" Width="120" Height="28" SelectedIndex="0">
+                                                <ComboBoxItem Content="Select ▾"/>
+                                                <ComboBoxItem Content="Cash In Drawer"/>
+                                                <ComboBoxItem Content="Bank Deposit"/>
+                                                <ComboBoxItem Content="Petty Cash Expense"/>
+                                                <ComboBoxItem Content="Cashier Error"/>
+                                                <ComboBoxItem Content="Other"/>
+                                            </ComboBox>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Card 2: Sales Information -->
+                                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="Sales Information" FontSize="13" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,8"/>
+                                        <DockPanel Margin="0,0,0,6">
+                                            <TextBlock Text="Opening cash" FontSize="11.5" Foreground="#64748B"/>
+                                            <TextBlock x:Name="DayEndOpeningCashText" Text="₹100.00" DockPanel.Dock="Right" FontSize="12" Foreground="#1E293B"/>
+                                        </DockPanel>
+                                        <DockPanel Margin="0,0,0,6">
+                                            <TextBlock Text="Total sales (Today)" FontSize="11.5" Foreground="#64748B"/>
+                                            <TextBlock x:Name="DayEndTodaySalesText" Text="₹8,190.00" DockPanel.Dock="Right" FontSize="12" Foreground="#1E293B"/>
+                                        </DockPanel>
+                                        <DockPanel Margin="0,0,0,6">
+                                            <TextBlock Text="Cash In" FontSize="11.5" Foreground="#64748B"/>
+                                            <TextBlock Text="₹0.00" DockPanel.Dock="Right" FontSize="12" Foreground="#1E293B"/>
+                                        </DockPanel>
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="Cash Out" FontSize="11.5" Foreground="#64748B"/>
+                                            <TextBlock Text="₹0.00" DockPanel.Dock="Right" FontSize="12" Foreground="#1E293B"/>
+                                        </DockPanel>
+                                        <DockPanel Margin="0,4,0,0">
+                                            <TextBlock Text="Today Sales" FontSize="12" FontWeight="Bold" Foreground="#1E3A8A"/>
+                                            <TextBlock x:Name="DayEndSummarySalesText" Text="₹8,190.00" DockPanel.Dock="Right" FontSize="13" FontWeight="Bold" Foreground="#3B4BD8"/>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Card 3: Today Sales Highlight Banner -->
+                                <Border Background="#E6F7EB" BorderBrush="#A7DFBF" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Today Sales" FontSize="11" Foreground="#166534" FontWeight="SemiBold"/>
+                                            <TextBlock x:Name="DayEndHighlightSalesText" Text="₹8,190.00" FontSize="18" FontWeight="Bold" Foreground="#15803D" Margin="0,2,0,2"/>
+                                            <TextBlock Text="See today's total sales from customers." FontSize="9.5" Foreground="#166534"/>
+                                        </StackPanel>
+                                        <Border Grid.Column="1" Width="38" Height="38" CornerRadius="19" Background="#DCFCE7" VerticalAlignment="Center">
+                                            <TextBlock Text="💰" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <!-- Bottom Action Bar -->
+                    <DockPanel Grid.Row="3" Margin="0,14,0,0">
+                        <Button Content="Cancel" Click="CloseDayEndModal_Click"
+                                DockPanel.Dock="Left" Height="38" Padding="16,0"
+                                Background="White" BorderBrush="#E2E8F0"
+                                Style="{StaticResource FlatButton}" FontSize="12.5"/>
+                        <Button Content="Complete Day End Settlement &amp; Close Shift" Click="ConfirmDayEndSettlement_Click"
+                                DockPanel.Dock="Right" Height="38" Padding="20,0"
+                                Background="#289B37" Foreground="White" BorderThickness="0"
+                                FontWeight="Bold" FontSize="12.5" Style="{StaticResource FlatButton}"/>
+                    </DockPanel>
                 </Grid>
             </Border>
         </Grid>

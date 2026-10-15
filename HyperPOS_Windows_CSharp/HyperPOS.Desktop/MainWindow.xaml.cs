@@ -678,7 +678,7 @@ public partial class MainWindow : Window
     {
         SetPage("Point of sale", "Browse your catalog and build a sale.", PosPanel);
         CartPanel.Visibility = Visibility.Visible;
-        CartColumn.Width = new GridLength(34, GridUnitType.Star);
+        CartColumn.Width = new GridLength(380);
         SetNavigation(PosNav);
         RefreshCatalog();
     }
@@ -925,6 +925,33 @@ public partial class MainWindow : Window
         }
     }
 
+    private void DayEndButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DayEndButton.ContextMenu != null)
+        {
+            DayEndButton.ContextMenu.PlacementTarget = DayEndButton;
+            DayEndButton.ContextMenu.IsOpen = true;
+        }
+    }
+
+    private void ShiftSettlement_Click(object sender, RoutedEventArgs e)
+    {
+        OpeningCash_Click(sender, e);
+    }
+
+    private ShiftSettlement? currentShiftSettlement;
+    private readonly ObservableCollection<CashDenominationCount> dayEndDenominations =
+    [
+        new() { Denomination = 2000, Label = "₹2,000.00" },
+        new() { Denomination = 500,  Label = "₹500.00" },
+        new() { Denomination = 200,  Label = "₹200.00" },
+        new() { Denomination = 100,  Label = "₹100.00" },
+        new() { Denomination = 50,   Label = "₹50.00" },
+        new() { Denomination = 20,   Label = "₹20.00" },
+        new() { Denomination = 10,   Label = "₹10.00" },
+        new() { Denomination = 5,    Label = "Coins (₹5.00)" }
+    ];
+
     private void DayEnd_Click(object sender, RoutedEventArgs e)
     {
         RefreshShiftStatus();
@@ -937,8 +964,8 @@ public partial class MainWindow : Window
 
         try
         {
-            var settlement = database.GetShiftSettlement(activeShift.Id);
-            if (settlement is null)
+            currentShiftSettlement = database.GetShiftSettlement(activeShift.Id);
+            if (currentShiftSettlement is null)
             {
                 RefreshShiftStatus();
                 MessageBox.Show("The active shift could not be found. Refresh and try again.",
@@ -946,22 +973,90 @@ public partial class MainWindow : Window
                 return;
             }
 
-            var dialog = new DayEndSettlementWindow(settlement) { Owner = this };
-            if (dialog.ShowDialog() != true)
-                return;
+            DayEndBusinessDateText.Text = currentShiftSettlement.BusinessDate.ToString("dd MMM yyyy - hh:mm tt");
+            DayEndDayOfWeekText.Text = currentShiftSettlement.BusinessDate.ToString("dddd");
+            DayEndHoursText.Text = $"{currentShiftSettlement.OpenedAt:hh:mm tt} - {DateTime.Now:hh:mm tt}";
+            var duration = DateTime.Now - currentShiftSettlement.OpenedAt;
+            DayEndDurationText.Text = $"{(int)duration.TotalHours}h {duration.Minutes}m";
+            DayEndTotalOrdersText.Text = $"{currentShiftSettlement.OrderCount} ({currentShiftSettlement.ItemCount} Items)";
+            DayEndCashierText.Text = cashierName;
 
-            database.CloseShift(settlement, dialog.CountedCash, dialog.DifferenceReason,
-                dialog.Notes, dialog.CashCounts);
+            DayEndGrossSalesText.Text = FormatMoney(currentShiftSettlement.TotalSales);
+            DayEndProductDiscountText.Text = "- ₹0.00";
+            DayEndNetSalesText.Text = FormatMoney(currentShiftSettlement.TotalSales);
+
+            DayEndPaymentsGrid.ItemsSource = currentShiftSettlement.Payments;
+            DayEndExpectedCashText.Text = FormatMoney(currentShiftSettlement.ExpectedCash);
+            DayEndOpeningCashText.Text = FormatMoney(currentShiftSettlement.OpeningCash);
+            DayEndTodaySalesText.Text = FormatMoney(currentShiftSettlement.TotalSales);
+            DayEndSummarySalesText.Text = FormatMoney(currentShiftSettlement.TotalSales);
+            DayEndHighlightSalesText.Text = FormatMoney(currentShiftSettlement.TotalSales);
+
+            DayEndDenominationsList.ItemsSource = dayEndDenominations;
+            foreach (var d in dayEndDenominations)
+            {
+                d.Quantity = 0;
+                d.PropertyChanged -= DayEndDenomination_PropertyChanged;
+                d.PropertyChanged += DayEndDenomination_PropertyChanged;
+            }
+            UpdateDayEndCashSummary();
+
+            DayEndSettlementModal.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Could not load settlement details: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void DayEndDenomination_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(CashDenominationCount.Quantity) or nameof(CashDenominationCount.Total))
+        {
+            UpdateDayEndCashSummary();
+        }
+    }
+
+    private void UpdateDayEndCashSummary()
+    {
+        if (currentShiftSettlement is null) return;
+        var counted = dayEndDenominations.Sum(d => d.Total);
+        var difference = counted - currentShiftSettlement.ExpectedCash;
+
+        DayEndTotalCashCountedText.Text = FormatMoney(counted);
+        DayEndReconciliationCountedText.Text = FormatMoney(counted);
+        DayEndDifferenceText.Text = FormatMoney(Math.Abs(difference));
+        DayEndDifferenceText.Foreground = difference == 0
+            ? new SolidColorBrush(Color.FromRgb(30, 142, 76))
+            : new SolidColorBrush(Color.FromRgb(220, 38, 38));
+    }
+
+    private void CloseDayEndModal_Click(object sender, RoutedEventArgs e)
+    {
+        DayEndSettlementModal.Visibility = Visibility.Collapsed;
+    }
+
+    private void ConfirmDayEndSettlement_Click(object sender, RoutedEventArgs e)
+    {
+        if (currentShiftSettlement is null) return;
+        var counted = dayEndDenominations.Sum(d => d.Total);
+        var reason = (DayEndDifferenceReasonCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
+        if (reason == "Select ▾") reason = "";
+        var notes = DayEndNotesBox.Text.Trim();
+        if (notes == "Enter the notes...") notes = "";
+
+        try
+        {
+            database.CloseShift(currentShiftSettlement, counted, reason, notes, dayEndDenominations);
+            DayEndSettlementModal.Visibility = Visibility.Collapsed;
             RefreshShiftStatus();
             MessageBox.Show(
-                $"Shift closed.\n\nOrders: {settlement.OrderCount}\nSales: {FormatMoney(settlement.TotalSales)}\nCash counted: {FormatMoney(dialog.CountedCash)}",
-                "Settlement complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                $"Shift closed successfully!\n\nOrders: {currentShiftSettlement.OrderCount}\nTotal Sales: {FormatMoney(currentShiftSettlement.TotalSales)}\nCounted Cash: {FormatMoney(counted)}",
+                "Settlement Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-        catch (Exception ex) when (ex is InvalidOperationException or Microsoft.Data.Sqlite.SqliteException)
+        catch (Exception ex)
         {
-            MessageBox.Show($"The shift could not be closed.\n\n{ex.Message}",
-                "Settlement failed", MessageBoxButton.OK, MessageBoxImage.Error);
-            RefreshShiftStatus();
+            MessageBox.Show($"The shift could not be closed.\n\n{ex.Message}", "Settlement Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -1890,6 +1985,12 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 return;
             }
+            if (DayEndSettlementModal.Visibility == Visibility.Visible)
+            {
+                DayEndSettlementModal.Visibility = Visibility.Collapsed;
+                e.Handled = true;
+                return;
+            }
             if (AddCustomerModal.Visibility == Visibility.Visible)
             {
                 AddCustomerModal.Visibility = Visibility.Collapsed;
@@ -1932,6 +2033,8 @@ public partial class MainWindow : Window
                         HoldOrderListModal.Visibility = Visibility.Collapsed;
                     if (ReceiptsModal.Visibility == Visibility.Visible)
                         ReceiptsModal.Visibility = Visibility.Collapsed;
+                    if (DayEndSettlementModal.Visibility == Visibility.Visible)
+                        DayEndSettlementModal.Visibility = Visibility.Collapsed;
                     if (CalculatorModal.Visibility == Visibility.Visible)
                         CalculatorModal.Visibility = Visibility.Collapsed;
                     if (AddProductModal.Visibility == Visibility.Visible)

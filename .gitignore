@@ -23,6 +23,7 @@ EBWebView/
 
 # Distribution packages (can be built from source using 'dotnet publish')
 Saraa_Boutique_POS_Portable/
+Saraa_Boutique_SingleExe/
 HyperPOS_App/
 
 # Logs & temp files
