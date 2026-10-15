@@ -783,6 +783,11 @@ public partial class MainWindow : Window
         RefreshHoldOrdersList();
     }
 
+    private void HoldOrderSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        RefreshHoldOrdersList();
+    }
+
     private void CloseHoldOrderList_Click(object sender, RoutedEventArgs e)
     {
         HoldOrderListModal.Visibility = Visibility.Collapsed;
@@ -831,9 +836,37 @@ public partial class MainWindow : Window
         }
     }
 
-    private void HoldOrderSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void HoldCartButton_Click(object sender, RoutedEventArgs e)
     {
-        RefreshHoldOrdersList();
+        HoldCurrentOrder();
+    }
+
+    private void HoldCurrentOrder()
+    {
+        if (cart.Count == 0)
+        {
+            MessageBox.Show("There are no items in the cart to hold.", "Cart Empty", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            var custName = selectedCustomer?.Name ?? pendingCustomerName;
+            if (string.IsNullOrWhiteSpace(custName)) custName = "Walking Customer";
+            database.SaveHeldOrder(custName, cart, cashierName, cashierEmail);
+            cart.Clear();
+            selectedCustomer = null;
+            pendingCustomerName = "Walking Customer";
+            if (CurrentCustomerText != null) CurrentCustomerText.Text = "Walking Customer";
+            UpdateCartSummary();
+            RefreshHoldOrdersList();
+            if (HoldCurrentCartBar != null) HoldCurrentCartBar.Visibility = Visibility.Collapsed;
+            MessageBox.Show($"Order for {custName} has been put on hold successfully!", "Order Held", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Failed to hold cart: {ex.Message}", "Hold Order Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void HoldCurrentCart_Click(object sender, RoutedEventArgs e)
@@ -2357,7 +2390,14 @@ public partial class MainWindow : Window
 
                 // F4: Hold order
                 case System.Windows.Input.Key.F4:
-                    HoldOrders_Click(this, new RoutedEventArgs());
+                    if (cart.Count > 0)
+                    {
+                        HoldCurrentOrder();
+                    }
+                    else
+                    {
+                        OpenHoldOrderListModal();
+                    }
                     e.Handled = true;
                     break;
 

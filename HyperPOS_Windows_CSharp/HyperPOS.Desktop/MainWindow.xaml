@@ -4,6 +4,7 @@
         Title="Saraa Boutique POS"
         Width="1400" Height="900" MinWidth="1100" MinHeight="700"
         WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
         Background="#EFEFEF"
         PreviewKeyDown="Window_PreviewKeyDown">
     <Window.Resources>
@@ -105,13 +106,22 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="8"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#F1F5F9"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#CBD5E1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#E2E8F0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -276,7 +286,7 @@
             </Setter>
         </Style>
 
-        <!-- Cart action button style -->
+        <!-- Cart action button style (Matches PHP web POS .pos-act-btn hover state) -->
         <Style x:Key="CartActionBtn" TargetType="Button">
             <Setter Property="Background"      Value="White"/>
             <Setter Property="Foreground"      Value="#374151"/>
@@ -291,13 +301,23 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="8"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#EEF4FF"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#C7D7FE"/>
+                                <Setter Property="Foreground" Value="#1D4ED8"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#DBEAFE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -314,11 +334,19 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
                                 CornerRadius="8">
                             <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"
                                               Margin="14,0"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#228630"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1A6625"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -331,17 +359,27 @@
                     BorderThickness="1" Padding="8,8,8,10"
                     Margin="4,0,4,10"
                     HorizontalAlignment="Stretch"
-                    MinHeight="288" Cursor="Hand"
+                    VerticalAlignment="Top"
+                    Height="296" Cursor="Hand"
                     FocusVisualStyle="{x:Null}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="8"
                                 Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="CardDropShadow" BlurRadius="6" ShadowDepth="2" Direction="270" Color="#000000" Opacity="0.04"/>
+                            </Border.Effect>
                             <ContentPresenter/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#3B4BD8"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#FAFAFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Button.Template>
                 <Grid>
@@ -661,8 +699,7 @@
         <!-- ==================== MAIN BODY ==================== -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="CartColumn" Width="380" MinWidth="320" MaxWidth="650"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition x:Name="CartColumn" Width="380"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -886,7 +923,7 @@
                     <!-- Cart action buttons -->
                     <StackPanel Grid.Row="2" Orientation="Horizontal"
                                 Margin="8,4,8,4" Height="32">
-                        <Button Style="{StaticResource CartActionBtn}" Click="HoldOrders_Click"
+                        <Button Style="{StaticResource CartActionBtn}" Click="HoldCartButton_Click"
                                 Margin="0,0,5,0">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="Hold " FontSize="10.5" Foreground="#374151"/>
@@ -1077,21 +1114,8 @@
                 </Grid>
             </Border>
 
-            <!-- ============ RESIZABLE SPLITTER (EXPANDABLE BILLING DESIGN) ============ -->
-            <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Center" VerticalAlignment="Stretch"
-                          Background="Transparent" Cursor="SizeWE" ShowsPreview="False">
-                <GridSplitter.Template>
-                    <ControlTemplate TargetType="{x:Type GridSplitter}">
-                        <Border Background="Transparent" Width="8">
-                            <Border Width="3" Height="40" Background="#CBD5E1" CornerRadius="1.5"
-                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </GridSplitter.Template>
-            </GridSplitter>
-
             <!-- ============ RIGHT: PRODUCTS PANEL ============ -->
-            <Grid Grid.Column="2" Margin="4,0,0,0">
+            <Grid Grid.Column="1" Margin="0">
                 <!-- POS panel -->
                 <Grid x:Name="PosPanel">
                     <Grid.RowDefinitions>
@@ -1193,7 +1217,7 @@
                                       ItemTemplate="{StaticResource ProductCardTemplate}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <UniformGrid Columns="5"/>
+                                    <UniformGrid Columns="5" VerticalAlignment="Top"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>

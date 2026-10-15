@@ -156,9 +156,10 @@ public partial class LoginWindow : Window
             App.Log($"OpenPos called for {cashierName} ({cashierEmail})");
             var pos = new MainWindow(cashierName, cashierEmail);
             Application.Current.MainWindow = pos;
+            pos.WindowState = WindowState.Maximized;
             pos.Show();
             Close();
-            App.Log("OpenPos successfully opened MainWindow and closed LoginWindow");
+            App.Log("OpenPos successfully opened MainWindow maximized and closed LoginWindow");
         }
         catch (Exception ex)
         {
