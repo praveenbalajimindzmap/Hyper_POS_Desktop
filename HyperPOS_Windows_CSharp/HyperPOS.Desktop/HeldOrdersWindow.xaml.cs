@@ -44,8 +44,11 @@ public partial class HeldOrdersWindow : Window
                      order.CustomerName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                      order.Total.ToString(System.Globalization.CultureInfo.InvariantCulture)
                          .Contains(search, StringComparison.OrdinalIgnoreCase)))
-            orders.Add(order);
         CountText.Text = $"{orders.Count} held order{(orders.Count == 1 ? "" : "s")} shown";
+        if (EmptyStatePanel != null)
+            EmptyStatePanel.Visibility = orders.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        if (OrdersGrid != null)
+            OrdersGrid.Visibility = orders.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void HoldCurrent_Click(object sender, RoutedEventArgs e)

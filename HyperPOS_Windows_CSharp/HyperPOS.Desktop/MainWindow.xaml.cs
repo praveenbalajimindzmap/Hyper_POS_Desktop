@@ -120,8 +120,8 @@ public partial class MainWindow : Window
             prod.CartQuantity = cartLookup.TryGetValue(prod.Id, out var qty) ? qty : 0;
         }
         ProductCatalog.ItemsSource = products;
-        ProductCountText.Text = $"Showing {products.Count} Products";
         var allProducts = database.GetProducts(SearchBox.Text);
+        ProductCountText.Text = $"Showing 1 – {products.Count} of {allProducts.Count} Products";
         var categories = database.GetCategories();
         CategoryButtons.Children.Clear();
         foreach (var category in categories)

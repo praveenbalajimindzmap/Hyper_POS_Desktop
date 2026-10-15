@@ -24,6 +24,76 @@
         <SolidColorBrush x:Key="BorderColor" Color="#E5E7EB"/>
         <DropShadowEffect x:Key="CardShadow" BlurRadius="20" ShadowDepth="4" Direction="270" Opacity="0.15" Color="#000000"/>
 
+        <!-- ======= MODERN ULTRA-SLIM SCROLLBAR STYLE ======= -->
+        <Style TargetType="{x:Type ScrollBar}">
+            <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
+            <Setter Property="Stylus.IsFlicksEnabled" Value="false"/>
+            <Setter Property="Width" Value="4"/>
+            <Setter Property="MinWidth" Value="4"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid x:Name="Bg" SnapsToDevicePixels="true" Background="Transparent">
+                            <Track x:Name="PART_Track" IsDirectionReversed="true">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}"
+                                                  Opacity="0" Focusable="false" Background="Transparent" BorderThickness="0"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="{x:Type Thumb}">
+                                                <Border Background="#CBD5E1" CornerRadius="2" Margin="0,2"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}"
+                                                  Opacity="0" Focusable="false" Background="Transparent" BorderThickness="0"/>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Height" Value="4"/>
+                    <Setter Property="MinHeight" Value="4"/>
+                    <Setter Property="Width" Value="Auto"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ScrollBar}">
+                                <Grid x:Name="Bg" SnapsToDevicePixels="true" Background="Transparent">
+                                    <Track x:Name="PART_Track">
+                                        <Track.DecreaseRepeatButton>
+                                            <RepeatButton Command="{x:Static ScrollBar.PageLeftCommand}"
+                                                          Opacity="0" Focusable="false" Background="Transparent" BorderThickness="0"/>
+                                        </Track.DecreaseRepeatButton>
+                                        <Track.Thumb>
+                                            <Thumb>
+                                                <Thumb.Template>
+                                                    <ControlTemplate TargetType="{x:Type Thumb}">
+                                                        <Border Background="#CBD5E1" CornerRadius="2" Margin="2,0"/>
+                                                    </ControlTemplate>
+                                                </Thumb.Template>
+                                            </Thumb>
+                                        </Track.Thumb>
+                                        <Track.IncreaseRepeatButton>
+                                            <RepeatButton Command="{x:Static ScrollBar.PageRightCommand}"
+                                                          Opacity="0" Focusable="false" Background="Transparent" BorderThickness="0"/>
+                                        </Track.IncreaseRepeatButton>
+                                    </Track>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- ======= SHARED BUTTON STYLE ======= -->
         <Style x:Key="FlatButton" TargetType="Button">
             <Setter Property="Background"   Value="White"/>
@@ -1011,13 +1081,10 @@
                     </ScrollViewer>
 
                     <!-- Footer -->
-                    <DockPanel Grid.Row="3" Margin="5,2">
-                        <TextBlock x:Name="ProductCountText" Text="Showing 0 Products"
-                                   FontSize="10" Foreground="#85828A" VerticalAlignment="Center"/>
-                        <TextBlock Text="Click or scan a product to add it to the sale"
-                                   DockPanel.Dock="Right" FontSize="10" Foreground="#96939A"
-                                   VerticalAlignment="Center"/>
-                    </DockPanel>
+                    <Border Grid.Row="3" Margin="5,4">
+                        <TextBlock x:Name="ProductCountText" Text="Showing 1 – 11 of 11 Products"
+                                   FontSize="11" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
                 </Grid>
 
                 <!-- Products management panel (hidden by default) -->
@@ -1072,21 +1139,20 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="24"/>
                     </Grid.RowDefinitions>
-                    <DockPanel Grid.Row="0" LastChildFill="True">
+                    <DockPanel Grid.Row="0" LastChildFill="True" Margin="0,0,0,10">
                         <Button DockPanel.Dock="Right" Click="ShowPos_Click"
-                                Content="←  Back to POS Register [Alt+B]"
-                                Height="36" Padding="14,0"
-                                Background="#289B37" Foreground="White" BorderThickness="0"
-                                FontSize="12.5" FontWeight="SemiBold"
+                                Content="✕" Width="32" Height="32" Padding="0"
+                                Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
+                                FontSize="13" Foreground="#64748B"
                                 Style="{StaticResource FlatButton}"
                                 Cursor="Hand" Margin="0,0,5,0"/>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Receipts" FontSize="20" FontWeight="Bold"/>
-                            <TextBlock Text="View and manage your completed sales receipts."
-                                       FontSize="11" Foreground="#85828A" Margin="0,4,0,0"/>
+                            <TextBlock Text="Receipts" FontSize="18" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="View and manage your sales orders"
+                                       FontSize="12" Foreground="#6B7280" Margin="0,4,0,0"/>
                         </StackPanel>
                     </DockPanel>
-                    <DockPanel Grid.Row="1">
+                    <DockPanel Grid.Row="1" Margin="0,0,0,8">
                         <Button Content="‹" Width="32" Margin="0,0,7,8"
                                 Click="PreviousReceiptWeek_Click"
                                 Background="White" BorderBrush="#E1E3EB"
@@ -1101,52 +1167,54 @@
                             <StackPanel x:Name="ReceiptDateButtons" Orientation="Horizontal"/>
                         </ScrollViewer>
                     </DockPanel>
-                    <DockPanel Grid.Row="2">
-                        <TextBlock x:Name="SelectedReceiptDateText" FontWeight="Bold"
+                    <DockPanel Grid.Row="2" Margin="0,0,0,6">
+                        <TextBlock x:Name="SelectedReceiptDateText" FontWeight="Bold" FontSize="13" Foreground="#1E293B"
                                    VerticalAlignment="Center"/>
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                            <TextBlock x:Name="ReceiptOrderCountText" Foreground="#747B8D"
-                                       VerticalAlignment="Center" Margin="0,0,12,0"/>
-                            <TextBlock x:Name="ReceiptDayTotalText" Foreground="#747B8D"
+                            <TextBlock x:Name="ReceiptOrderCountText" Foreground="#64748B" FontSize="12"
+                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="•" Foreground="#CBD5E1" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock x:Name="ReceiptDayTotalText" Foreground="#64748B" FontSize="12"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </DockPanel>
                     <DataGrid x:Name="SalesGrid" Grid.Row="3" AutoGenerateColumns="False"
                               IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column"
-                              GridLinesVisibility="None" Background="White" BorderBrush="#E8E7E9"
+                              GridLinesVisibility="None" Background="White" BorderBrush="#E2E8F0"
                               RowHeight="50" ColumnHeaderHeight="40">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="SL"             Binding="{Binding Id}"                                        Width="45"/>
-                            <DataGridTextColumn Header="RECEIPT NO"     Binding="{Binding ReceiptNumber}"                             Width="1.5*"/>
-                            <DataGridTextColumn Header="TIME"           Binding="{Binding CreatedAt, StringFormat={}{0:hh:mm tt}}"    Width="*"/>
-                            <DataGridTextColumn Header="CUSTOMER NAME"  Binding="{Binding CustomerName}"                              Width="1.4*"/>
-                            <DataGridTextColumn Header="ITEMS"          Binding="{Binding ItemCount, StringFormat={}{0} Items}"       Width="*"/>
-                            <DataGridTextColumn Header="PAYMENT METHOD" Binding="{Binding PaymentMethod}"                             Width="1.2*"/>
-                            <DataGridTextColumn Header="TOTAL AMOUNT"   Binding="{Binding Total, StringFormat=₹{0:N2}}"              Width="1.2*"/>
-                            <DataGridTemplateColumn Header="STATUS" Width="105">
+                            <DataGridTextColumn Header="Order No"       Binding="{Binding ReceiptNumber}"                             Width="1.2*"/>
+                            <DataGridTextColumn Header="Time"           Binding="{Binding CreatedAt, StringFormat={}{0:dd MMM yyyy hh:mm tt}}" Width="1.5*"/>
+                            <DataGridTextColumn Header="Customer Name"  Binding="{Binding CustomerName}"                              Width="1.5*"/>
+                            <DataGridTextColumn Header="Items"          Binding="{Binding ItemCount, StringFormat={}{0} Items}"       Width="*"/>
+                            <DataGridTextColumn Header="Payment Method" Binding="{Binding PaymentMethod}"                             Width="1.2*"/>
+                            <DataGridTextColumn Header="Total Amount"   Binding="{Binding Total, StringFormat=₹{0:N2}}"              Width="1.2*"/>
+                            <DataGridTemplateColumn Header="Status" Width="110">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border Background="#E7F8EC" CornerRadius="5" Padding="7,4"
+                                        <Border Background="#DCFCE7" CornerRadius="6" Padding="10,4"
                                                 HorizontalAlignment="Left" VerticalAlignment="Center">
-                                            <TextBlock Text="Completed" Foreground="#218246" FontSize="10"/>
+                                            <TextBlock Text="Delivered" Foreground="#15803D" FontSize="11" FontWeight="SemiBold"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="ACTION" Width="125">
+                            <DataGridTemplateColumn Header="Action" Width="130">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Button Content="···  View more" Click="ViewReceipt_Click"
-                                                Padding="8,5" Background="#F1F2FF" Foreground="#4149A5"
-                                                BorderBrush="#DCE0FA"
+                                        <Button Content="···  View more  ▾" Click="ViewReceipt_Click"
+                                                Padding="10,5" Background="White" Foreground="#2563EB"
+                                                BorderBrush="#DBEAFE" BorderThickness="1"
+                                                FontSize="11.5" FontWeight="SemiBold"
                                                 Style="{StaticResource FlatButton}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <TextBlock Grid.Row="4" x:Name="ReceiptShowingText" Foreground="#85828A"
-                               FontSize="10" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="4" x:Name="ReceiptShowingText" Foreground="#64748B"
+                               FontSize="11" VerticalAlignment="Center"/>
                 </Grid>
             </Grid>
         </Grid>
