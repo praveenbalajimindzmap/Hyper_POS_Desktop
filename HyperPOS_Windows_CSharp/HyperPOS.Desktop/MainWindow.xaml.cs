@@ -114,14 +114,21 @@ public partial class MainWindow : Window
 
     private void RefreshCatalog()
     {
-        var products = database.GetProducts(SearchBox.Text, selectedCategory);
+        var rawSearch = SearchBox.Text?.Trim() ?? string.Empty;
+        var searchTerm = rawSearch;
+        if (TryParseScannedInput(rawSearch, out var parsedCode, out var parsedQty) && parsedQty > 1)
+        {
+            searchTerm = parsedCode;
+        }
+
+        var products = database.GetProducts(searchTerm, selectedCategory);
         var cartLookup = cart.ToDictionary(c => c.Product.Id, c => c.Quantity);
         foreach (var prod in products)
         {
             prod.CartQuantity = cartLookup.TryGetValue(prod.Id, out var qty) ? qty : 0;
         }
         ProductCatalog.ItemsSource = products;
-        var allProducts = database.GetProducts(SearchBox.Text);
+        var allProducts = database.GetProducts(searchTerm);
         ProductCountText.Text = $"Showing 1 – {products.Count} of {allProducts.Count} Products";
         var categories = database.GetCategories();
         CategoryButtons.Children.Clear();
@@ -273,19 +280,66 @@ public partial class MainWindow : Window
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => RefreshCatalog();
 
+    private static bool TryParseScannedInput(string rawInput, out string code, out int quantity)
+    {
+        code = string.Empty;
+        quantity = 1;
+        if (string.IsNullOrWhiteSpace(rawInput))
+            return false;
+
+        rawInput = rawInput.Trim();
+
+        // Pattern 1: <qty> * <code> or <qty> x <code> (e.g., "5*SB0002", "5 * SB0002", "5xSB0002")
+        var matchQtyFirst = System.Text.RegularExpressions.Regex.Match(rawInput, @"^(\d+)\s*[\*xX]\s*(.+)$");
+        if (matchQtyFirst.Success)
+        {
+            if (int.TryParse(matchQtyFirst.Groups[1].Value, out var q) && q > 0)
+            {
+                quantity = q;
+                code = matchQtyFirst.Groups[2].Value.Trim();
+                return !string.IsNullOrWhiteSpace(code);
+            }
+        }
+
+        // Pattern 2: <code> * <qty> (e.g., "SB0002*5", "SB0002 * 5")
+        var matchCodeFirst = System.Text.RegularExpressions.Regex.Match(rawInput, @"^(.+?)\s*[\*]\s*(\d+)$");
+        if (matchCodeFirst.Success)
+        {
+            if (int.TryParse(matchCodeFirst.Groups[2].Value, out var q) && q > 0)
+            {
+                quantity = q;
+                code = matchCodeFirst.Groups[1].Value.Trim();
+                return !string.IsNullOrWhiteSpace(code);
+            }
+        }
+
+        code = rawInput;
+        quantity = 1;
+        return true;
+    }
+
     private void SearchBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         if (e.Key != System.Windows.Input.Key.Enter)
             return;
 
-        var scannedCode = SearchBox.Text.Trim();
-        var product = database.GetProducts().FirstOrDefault(item =>
-            string.Equals(item.Barcode, scannedCode, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(item.Sku, scannedCode, StringComparison.OrdinalIgnoreCase));
-        if (product is not null)
+        var rawInput = SearchBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(rawInput))
+            return;
+
+        if (TryParseScannedInput(rawInput, out var code, out var qty))
         {
-            AddProductToCart(product);
-            SearchBox.Clear();
+            var product = database.GetProducts().FirstOrDefault(item =>
+                string.Equals(item.Barcode, code, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.Sku, code, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.Name, code, StringComparison.OrdinalIgnoreCase));
+            if (product is not null)
+            {
+                AddProductToCart(product, qty);
+                SearchBox.Clear();
+                e.Handled = true;
+                return;
+            }
         }
         e.Handled = true;
     }
@@ -303,13 +357,34 @@ public partial class MainWindow : Window
 
     private void ScanProduct()
     {
-        var scannedCode = ScanBox.Text.Trim();
-        if (string.IsNullOrWhiteSpace(scannedCode))
+        var rawInput = ScanBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(rawInput))
             return;
 
-        var product = database.GetProducts().FirstOrDefault(item =>
+        if (!TryParseScannedInput(rawInput, out var scannedCode, out var quantity))
+        {
+            scannedCode = rawInput;
+            quantity = 1;
+        }
+
+        var allProducts = database.GetProducts();
+        var product = allProducts.FirstOrDefault(item =>
             string.Equals(item.Barcode, scannedCode, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(item.Sku, scannedCode, StringComparison.OrdinalIgnoreCase));
+            string.Equals(item.Sku, scannedCode, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(item.Name, scannedCode, StringComparison.OrdinalIgnoreCase));
+
+        // If not found, try searching by exact rawInput just in case a SKU actually has an asterisk
+        if (product is null && rawInput != scannedCode)
+        {
+            product = allProducts.FirstOrDefault(item =>
+                string.Equals(item.Barcode, rawInput, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.Sku, rawInput, StringComparison.OrdinalIgnoreCase));
+            if (product is not null)
+            {
+                quantity = 1;
+            }
+        }
+
         if (product is null)
         {
             MessageBox.Show($"No product was found for barcode or SKU '{scannedCode}'.",
@@ -317,8 +392,10 @@ public partial class MainWindow : Window
             return;
         }
 
-        AddProductToCart(product);
-        LastScannedText.Text = $"Last scanned: {product.Name}";
+        AddProductToCart(product, quantity);
+        LastScannedText.Text = quantity > 1
+            ? $"Last scanned: {quantity}x {product.Name}"
+            : $"Last scanned: {product.Name}";
         ScanBox.Clear();
     }
 
@@ -427,8 +504,10 @@ public partial class MainWindow : Window
         AddProductToCart(product);
     }
 
-    private void AddProductToCart(Product product)
+    private void AddProductToCart(Product product, int quantity = 1)
     {
+        if (quantity <= 0) quantity = 1;
+
         if (product.Stock <= 0)
         {
             MessageBox.Show($"{product.Name} is out of stock.", "Stock unavailable",
@@ -437,15 +516,29 @@ public partial class MainWindow : Window
         }
 
         var line = cart.FirstOrDefault(item => item.Product.Id == product.Id);
-        if (line is null)
-            cart.Add(new CartItem { Product = product });
-        else if (line.Quantity < product.Stock)
-            line.Quantity++;
-        else
+        int currentQty = line?.Quantity ?? 0;
+        int targetQty = currentQty + quantity;
+
+        if (targetQty > product.Stock)
         {
-            MessageBox.Show($"Only {product.Stock} units of {product.Name} are in stock.",
-                "Stock limit", MessageBoxButton.OK, MessageBoxImage.Information);
+            int allowable = product.Stock - currentQty;
+            if (allowable <= 0)
+            {
+                MessageBox.Show($"Only {product.Stock} units of {product.Name} are in stock (all already in cart).",
+                    "Stock limit", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            MessageBox.Show($"Only {product.Stock} units of {product.Name} are in stock. Adding {allowable} instead of {quantity}.",
+                "Stock limit", MessageBoxButton.OK, MessageBoxImage.Warning);
+            quantity = allowable;
+            targetQty = currentQty + quantity;
         }
+
+        if (line is null)
+            cart.Add(new CartItem { Product = product, Quantity = quantity });
+        else
+            line.Quantity = targetQty;
 
         UpdateCartSummary();
     }
