@@ -5,6 +5,25 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Application & Assembly Metadata for Windows Code Integrity -->
+    <AssemblyName>HyperPOS.Desktop</AssemblyName>
+    <Product>Saraa Boutique POS</Product>
+    <Company>Saraa Boutique</Company>
+    <AssemblyTitle>Saraa Boutique POS</AssemblyTitle>
+    <Description>Saraa Boutique Desktop Point of Sale</Description>
+    <Version>1.0.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </PropertyGroup>
+
+  <!-- Clean Single-File Publishing Configuration for Windows -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
