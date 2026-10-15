@@ -506,9 +506,15 @@
         <Border Grid.Row="0" Background="White" BorderBrush="#EEF1F4"
                 BorderThickness="1" CornerRadius="10"
                 Padding="14,9" Margin="0,0,0,8">
-            <DockPanel LastChildFill="True">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/> <!-- LEFT: Branding -->
+                    <ColumnDefinition Width="*"/>    <!-- Blank Flexible Space in between -->
+                    <ColumnDefinition Width="Auto"/> <!-- RIGHT: Header Actions -->
+                </Grid.ColumnDefinitions>
+
                 <!-- LEFT: Branding -->
-                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Purple square logo box with letter 'D' -->
                     <Border Width="38" Height="38" CornerRadius="7" Background="#484C7F">
                         <TextBlock Text="D" Foreground="White" FontSize="20" FontWeight="Bold"
@@ -540,7 +546,7 @@
                 </StackPanel>
 
                 <!-- RIGHT: Header Actions -->
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <!-- Opening Cash -->
                     <Button x:Name="OpeningCashButton" Click="OpeningCash_Click"
                             Background="Transparent" BorderThickness="0"
@@ -662,7 +668,7 @@
                         <TextBlock x:Name="CashierRoleLabel"/>
                     </StackPanel>
                 </StackPanel>
-            </DockPanel>
+            </Grid>
         </Border>
 
         <!-- ==================== MAIN BODY ==================== -->
