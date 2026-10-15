@@ -138,6 +138,57 @@
             </Setter>
         </Style>
 
+        <!-- Modern ContextMenu and MenuItem styles -->
+        <Style x:Key="ModernContextMenu" TargetType="ContextMenu">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Grid.IsSharedSizeScope" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="4">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="18" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.12"/>
+                            </Border.Effect>
+                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernMenuItem" TargetType="MenuItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" CornerRadius="6" Padding="12,8" Margin="0,1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="24"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0" ContentSource="Icon" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                <ContentPresenter Grid.Column="1" ContentSource="Header" VerticalAlignment="Center" Margin="6,0,10,0"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#F1F5F9"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Toggle Switch CheckBox Style -->
         <Style x:Key="ToggleSwitchStyle" TargetType="CheckBox">
             <Setter Property="Cursor" Value="Hand"/>
@@ -2317,24 +2368,39 @@
                             <DataGridTextColumn Header="Items"          Binding="{Binding ItemCount, StringFormat={}{0} Items}"       Width="*"/>
                             <DataGridTextColumn Header="Payment Method" Binding="{Binding PaymentMethod}"                             Width="1.2*"/>
                             <DataGridTextColumn Header="Total Amount"   Binding="{Binding Total, StringFormat=₹{0:N2}}"              Width="1.2*"/>
-                            <DataGridTemplateColumn Header="Status" Width="110">
+                            <DataGridTemplateColumn Header="Status" Width="120">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border Background="#DCFCE7" CornerRadius="6" Padding="10,4"
+                                        <Border Background="{Binding StatusBackground}" CornerRadius="6" Padding="10,4"
                                                 HorizontalAlignment="Left" VerticalAlignment="Center">
-                                            <TextBlock Text="Delivered" Foreground="#15803D" FontSize="11" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Status}" Foreground="{Binding StatusForeground}" FontSize="11" FontWeight="SemiBold"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Action" Width="130">
+                            <DataGridTemplateColumn Header="Action" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Button Content="···  View more  ▾" Click="ViewReceipt_Click"
-                                                Padding="10,5" Background="White" Foreground="#2563EB"
+                                        <Button Content="···  View more  ▾" Click="ReceiptActionMore_Click"
+                                                Padding="12,5" Background="White" Foreground="#2563EB"
                                                 BorderBrush="#DBEAFE" BorderThickness="1"
                                                 FontSize="11.5" FontWeight="SemiBold"
-                                                Style="{StaticResource FlatButton}"/>
+                                                Style="{StaticResource FlatButton}">
+                                            <Button.ContextMenu>
+                                                <ContextMenu Style="{StaticResource ModernContextMenu}">
+                                                    <MenuItem Header="Print" Click="ReceiptPrintMenu_Click" Style="{StaticResource ModernMenuItem}">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="🖨" FontSize="13" Foreground="#4B5563"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Refund" Click="ReceiptRefundMenu_Click" Style="{StaticResource ModernMenuItem}">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="↩" FontSize="14" FontWeight="Bold" Foreground="#3943A8"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                </ContextMenu>
+                                            </Button.ContextMenu>
+                                        </Button>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -2657,6 +2723,328 @@
                                 Background="#289B37" Foreground="White" BorderThickness="0"
                                 FontWeight="Bold" FontSize="12.5" Style="{StaticResource FlatButton}"/>
                     </DockPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== REFUND ORDER MODAL POPUP ==================== -->
+        <Grid x:Name="RefundOrderModal" Grid.Row="0" Grid.RowSpan="2"
+              Visibility="Collapsed" Background="#66000000" Panel.ZIndex="145"
+              MouseDown="ModalBackdrop_MouseDown">
+            <Border Background="White" CornerRadius="16" Width="1080" MaxHeight="720"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Padding="26,20,26,22" Margin="16">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" ShadowDepth="8" Direction="270" Color="#000000" Opacity="0.25"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Header -->
+                        <RowDefinition Height="Auto"/> <!-- Snapshot Strip -->
+                        <RowDefinition Height="*"/>    <!-- 2-Col Main Content -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <DockPanel Grid.Row="0" LastChildFill="True" Margin="0,0,0,14">
+                        <Button DockPanel.Dock="Right" Width="32" Height="32" Padding="0"
+                                Click="CloseRefundOrderModal_Click"
+                                Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
+                                Style="{StaticResource FlatButton}" Cursor="Hand">
+                            <TextBlock Text="✕" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Refund Order" FontSize="18" FontWeight="Bold" Foreground="#1F2937"/>
+                            <TextBlock Text="Select items and quantity to refund."
+                                       FontSize="12" Foreground="#6B7280" Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- Top Order Snapshot Strip -->
+                    <Border Grid.Row="1" Background="White" BorderBrush="#ECEEF3" BorderThickness="1"
+                            CornerRadius="10" Padding="14,10,10,10" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="175"/> <!-- Order No -->
+                                <ColumnDefinition Width="1.2*"/> <!-- Customer Details -->
+                                <ColumnDefinition Width="1.1*"/> <!-- Order Date & Time -->
+                                <ColumnDefinition Width="1*"/>   <!-- Payment Method -->
+                                <ColumnDefinition Width="160"/>  <!-- Total Amount Badge -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Order No -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Width="38" Height="38" CornerRadius="19" Background="#3943A8" Margin="0,0,10,0">
+                                    <TextBlock Text="🧾" FontSize="16" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Order No" FontSize="11" Foreground="#6B7280"/>
+                                    <TextBlock x:Name="RefundOrderNumberText" Text="#100004" FontSize="13.5" FontWeight="Bold" Foreground="#3943A8"/>
+                                    <TextBlock x:Name="RefundOrderItemCountText" Text="6 Items" FontSize="11" Foreground="#6B7280"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Customer Details -->
+                            <Border Grid.Column="1" BorderBrush="#E9EBF1" BorderThickness="1,0,0,0" Padding="16,0,8,0">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Customer Details" FontSize="11" Foreground="#6B7280"/>
+                                    <TextBlock x:Name="RefundCustomerNameText" Text="Walking Customer - 001" FontSize="13.5" FontWeight="Bold" Foreground="#3943A8" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock x:Name="RefundCustomerPhoneText" Text="No phone number" FontSize="11" Foreground="#6B7280"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Order Date & Time -->
+                            <Border Grid.Column="2" BorderBrush="#E9EBF1" BorderThickness="1,0,0,0" Padding="16,0,8,0">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Order Date &amp; Time" FontSize="11" Foreground="#6B7280"/>
+                                    <TextBlock x:Name="RefundOrderDateText" Text="14 Oct 2026" FontSize="13.5" FontWeight="Bold" Foreground="#1F2937"/>
+                                    <TextBlock x:Name="RefundOrderTimeText" Text="12:32 PM" FontSize="11" Foreground="#6B7280"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Payment Method -->
+                            <Border Grid.Column="3" BorderBrush="#E9EBF1" BorderThickness="1,0,0,0" Padding="16,0,8,0">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Payment Method" FontSize="11" Foreground="#6B7280"/>
+                                    <TextBlock x:Name="RefundPaymentMethodText" Text="Cash" FontSize="13.5" FontWeight="Bold" Foreground="#3943A8"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Total Amount Badge -->
+                            <Border Grid.Column="4" Background="#3943A8" CornerRadius="8" Padding="12,8" Margin="8,0,0,0" VerticalAlignment="Stretch">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Total Amount" FontSize="11" Foreground="#CBD5E1"/>
+                                    <TextBlock x:Name="RefundOrderTotalText" Text="₹8,190.00" FontSize="17" FontWeight="ExtraBold" Foreground="White"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Main 2-Column Content -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>      <!-- Left: Ordered Items Table -->
+                            <ColumnDefinition Width="330"/>    <!-- Right: Refund Action Panel -->
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Column: Ordered Items -->
+                        <Grid Grid.Column="0" Margin="0,0,16,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/> <!-- Title -->
+                                <RowDefinition Height="Auto"/> <!-- Table Header -->
+                                <RowDefinition Height="*"/>    <!-- Items Scroll -->
+                                <RowDefinition Height="Auto"/> <!-- Footer -->
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Ordered Items" FontSize="13" FontWeight="Bold" Foreground="#2B3040" Margin="0,0,0,8"/>
+
+                            <!-- Table Header -->
+                            <Border Grid.Row="1" Background="#EEF1FF" CornerRadius="8" Padding="8,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="32"/>  <!-- Pick -->
+                                        <ColumnDefinition Width="*"/>   <!-- Product -->
+                                        <ColumnDefinition Width="76"/>  <!-- Price -->
+                                        <ColumnDefinition Width="46"/>  <!-- Qty -->
+                                        <ColumnDefinition Width="80"/>  <!-- Refunded Qty -->
+                                        <ColumnDefinition Width="88"/>  <!-- Refund Qty -->
+                                        <ColumnDefinition Width="90"/>  <!-- Refund Amount -->
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="" FontSize="11" FontWeight="Bold" Foreground="#4B5163"/>
+                                    <TextBlock Grid.Column="1" Text="Product" FontSize="11" FontWeight="Bold" Foreground="#4B5163"/>
+                                    <TextBlock Grid.Column="2" Text="Price" FontSize="11" FontWeight="Bold" Foreground="#4B5163" TextAlignment="Center"/>
+                                    <TextBlock Grid.Column="3" Text="Qty" FontSize="11" FontWeight="Bold" Foreground="#4B5163" TextAlignment="Center"/>
+                                    <TextBlock Grid.Column="4" Text="Refunded Qty" FontSize="11" FontWeight="Bold" Foreground="#4B5163" TextAlignment="Center"/>
+                                    <TextBlock Grid.Column="5" Text="Refund Qty" FontSize="11" FontWeight="Bold" Foreground="#4B5163" TextAlignment="Center"/>
+                                    <TextBlock Grid.Column="6" Text="Refund Amount" FontSize="11" FontWeight="Bold" Foreground="#4B5163" TextAlignment="Right"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Items ScrollViewer -->
+                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,4,0,4" MaxHeight="310">
+                                <ItemsControl x:Name="RefundItemsList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#F1F2F6" BorderThickness="0,0,0,1" Padding="8,8">
+                                                <Grid VerticalAlignment="Center">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="32"/>  <!-- Pick Checkbox -->
+                                                        <ColumnDefinition Width="*"/>   <!-- Product (Thumb + Name + SKU) -->
+                                                        <ColumnDefinition Width="76"/>  <!-- Price -->
+                                                        <ColumnDefinition Width="46"/>  <!-- Qty -->
+                                                        <ColumnDefinition Width="80"/>  <!-- Refunded Qty -->
+                                                        <ColumnDefinition Width="88"/>  <!-- Refund Qty Stepper -->
+                                                        <ColumnDefinition Width="90"/>  <!-- Refund Amount -->
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Checkbox Pick -->
+                                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                                              IsEnabled="{Binding IsRefundable}"
+                                                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                                                    <!-- Product Info with Thumbnail -->
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                        <Border Width="44" Height="44" CornerRadius="7" Background="#F3F4F6"
+                                                                BorderBrush="#EEF0F4" BorderThickness="1" Margin="0,0,10,0" ClipToBounds="True">
+                                                            <Grid>
+                                                                <TextBlock Text="🛍" FontSize="18" Foreground="#CBD5E1"
+                                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                <Image Source="{Binding ImageUrl}" Stretch="UniformToFill"
+                                                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                            </Grid>
+                                                        </Border>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding ProductName}" FontSize="12" FontWeight="SemiBold"
+                                                                       Foreground="#1F2937" TextTrimming="CharacterEllipsis" MaxWidth="240"/>
+                                                            <TextBlock Text="{Binding SkuPriceMeta}" FontSize="10.5" Foreground="#9AA0B0"
+                                                                       Margin="0,2,0,0" TextTrimming="CharacterEllipsis" MaxWidth="240"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <!-- Price -->
+                                                    <TextBlock Grid.Column="2" Text="{Binding UnitPrice, StringFormat=₹{0:N2}}"
+                                                               FontSize="12" FontWeight="SemiBold" Foreground="#2B3040"
+                                                               VerticalAlignment="Center" TextAlignment="Center"/>
+
+                                                    <!-- Original Qty -->
+                                                    <TextBlock Grid.Column="3" Text="{Binding OriginalQty}"
+                                                               FontSize="12" Foreground="#4B5563"
+                                                               VerticalAlignment="Center" TextAlignment="Center"/>
+
+                                                    <!-- Refunded Qty -->
+                                                    <TextBlock Grid.Column="4" Text="{Binding RefundedQty}"
+                                                               FontSize="12" FontWeight="SemiBold" Foreground="#9AA0B0"
+                                                               VerticalAlignment="Center" TextAlignment="Center"/>
+
+                                                    <!-- Refund Qty Numeric Stepper -->
+                                                    <Border Grid.Column="5" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
+                                                            CornerRadius="6" Height="28" Width="76" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="22"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="22"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Button Grid.Column="0" Content="-" Click="RefundQtyMinus_Click"
+                                                                    IsEnabled="{Binding IsRefundable}"
+                                                                    Background="Transparent" BorderThickness="0" FontWeight="Bold"
+                                                                    Foreground="#64748B" FontSize="12" Padding="0"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding RefundQty}"
+                                                                       FontSize="12" FontWeight="SemiBold" Foreground="#1E293B"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            <Button Grid.Column="2" Content="+" Click="RefundQtyPlus_Click"
+                                                                    IsEnabled="{Binding IsRefundable}"
+                                                                    Background="Transparent" BorderThickness="0" FontWeight="Bold"
+                                                                    Foreground="#64748B" FontSize="12" Padding="0"/>
+                                                        </Grid>
+                                                    </Border>
+
+                                                    <!-- Refund Amount -->
+                                                    <TextBlock Grid.Column="6" Text="{Binding RefundAmountFormatted}"
+                                                               FontSize="12" FontWeight="SemiBold" Foreground="#1F2937"
+                                                               VerticalAlignment="Center" TextAlignment="Right"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <!-- Table Footer -->
+                            <TextBlock Grid.Row="3" x:Name="RefundShowingText" Text="Showing 1 - 2 of 2 Order Items"
+                                       FontSize="11" Foreground="#6B7280" Margin="2,8,2,0"/>
+                        </Grid>
+
+                        <!-- Right Column: Refund Aside Panel -->
+                        <Border Grid.Column="1" Background="Transparent" VerticalAlignment="Stretch">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/> <!-- Amount Card -->
+                                    <RowDefinition Height="Auto"/> <!-- Reason -->
+                                    <RowDefinition Height="Auto"/> <!-- Notes -->
+                                    <RowDefinition Height="Auto"/> <!-- Warning -->
+                                    <RowDefinition Height="*"/>    <!-- Spacer -->
+                                    <RowDefinition Height="Auto"/> <!-- Action Buttons -->
+                                </Grid.RowDefinitions>
+
+                                <!-- Amount Card -->
+                                <Border Grid.Row="0" Background="#FFF8EC" BorderBrush="#FDE9C8" BorderThickness="1"
+                                        CornerRadius="10" Padding="12,10" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock x:Name="RefundAsideMethodLabel" Text="Refund Amount (Cash)"
+                                                   FontSize="12" FontWeight="Bold" Foreground="#3F4351"/>
+                                        <TextBlock x:Name="RefundTotalAmountText" Text="₹0.00"
+                                                   FontSize="20" FontWeight="Bold" Foreground="#F59E0B" Margin="0,3,0,2"/>
+                                        <TextBlock x:Name="RefundRemainingRefundableText" Text="Remaining refundable amount: ₹0.00"
+                                                   FontSize="10.5" Foreground="#9A8F7D"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Reason for Refund -->
+                                <StackPanel Grid.Row="1" Margin="0,0,0,10">
+                                    <TextBlock Text="Reason for Refund" FontSize="12" FontWeight="SemiBold" Foreground="#3F4351" Margin="0,0,0,4"/>
+                                    <ComboBox x:Name="RefundReasonComboBox" Height="36" Padding="8,4"
+                                              Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
+                                              FontSize="12" VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="Select a Reason" IsSelected="True"/>
+                                        <ComboBoxItem Content="Customer changed mind"/>
+                                        <ComboBoxItem Content="Wrong item added"/>
+                                        <ComboBoxItem Content="Wrong quantity added"/>
+                                        <ComboBoxItem Content="Duplicate item scanned"/>
+                                        <ComboBoxItem Content="Price mismatch"/>
+                                        <ComboBoxItem Content="Discount applied incorrectly"/>
+                                        <ComboBoxItem Content="Out of stock"/>
+                                        <ComboBoxItem Content="Damaged product"/>
+                                        <ComboBoxItem Content="Payment failed"/>
+                                        <ComboBoxItem Content="Payment method changed"/>
+                                        <ComboBoxItem Content="Cashier entry error"/>
+                                        <ComboBoxItem Content="Barcode scan error"/>
+                                        <ComboBoxItem Content="Customer requested cancellation"/>
+                                        <ComboBoxItem Content="Store manager approval"/>
+                                        <ComboBoxItem Content="System POS error"/>
+                                        <ComboBoxItem Content="Customer left without purchase"/>
+                                        <ComboBoxItem Content="Order recreated"/>
+                                        <ComboBoxItem Content="Other"/>
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <!-- Additional Notes -->
+                                <StackPanel Grid.Row="2" Margin="0,0,0,10">
+                                    <TextBlock Text="Additional Notes (Optional)" FontSize="12" FontWeight="SemiBold" Foreground="#3F4351" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="RefundNotesTextBox" Height="70" TextWrapping="Wrap" AcceptsReturn="True"
+                                             MaxLength="500" Padding="8,6" Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
+                                             FontSize="12" TextChanged="RefundNotesTextBox_TextChanged"/>
+                                    <TextBlock x:Name="RefundNotesCounterText" Text="0/500" FontSize="10.5" Foreground="#9CA3AF"
+                                               HorizontalAlignment="Right" Margin="0,3,0,0"/>
+                                </StackPanel>
+
+                                <!-- Warning Box -->
+                                <Border Grid.Row="3" Background="#FFF1F1" BorderBrush="#FCDADA" BorderThickness="1"
+                                        CornerRadius="8" Padding="10,8" Margin="0,0,0,12">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="ⓘ" Foreground="#E0525B" FontWeight="Bold" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Top"/>
+                                        <TextBlock Text="This order will be refund and cannot be restored."
+                                                   FontSize="11.5" Foreground="#E0525B" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Action Buttons -->
+                                <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                                    <Button Content="Cancel" Click="CloseRefundOrderModal_Click"
+                                            Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
+                                            Foreground="#4B5163" FontSize="12.5" FontWeight="SemiBold"
+                                            Padding="16,8" Margin="0,0,8,0" Style="{StaticResource FlatButton}" Cursor="Hand"/>
+                                    <Button x:Name="ProcessRefundButton" Click="ProcessRefund_Click"
+                                            Background="#3943A8" Foreground="White" FontSize="12.5" FontWeight="SemiBold"
+                                            Padding="16,8" Style="{StaticResource FlatButton}" Cursor="Hand">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="🔄 " FontSize="12" Foreground="White" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Process Refund" FontSize="12.5" Foreground="White" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>

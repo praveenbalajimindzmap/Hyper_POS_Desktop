@@ -328,7 +328,10 @@ public sealed class PosDatabase
         using var command = connection.CreateCommand();
         command.CommandText = """
             SELECT s.id, s.receipt_number, s.created_at, s.customer_name, s.payment_method, s.total,
-                   COUNT(si.id)
+                   COUNT(si.id),
+                   COALESCE(s.order_status, 'Delivered'),
+                   COALESCE(s.customer_phone, 'No phone number'),
+                   COALESCE(s.refunded_amount, 0)
             FROM sales s
             LEFT JOIN sale_items si ON si.sale_id = s.id
             WHERE (@businessDate IS NULL OR substr(s.created_at, 1, 10) = @businessDate)
@@ -352,7 +355,10 @@ public sealed class PosDatabase
                 CustomerName = reader.GetString(3),
                 PaymentMethod = reader.GetString(4),
                 Total = reader.GetDecimal(5),
-                ItemCount = reader.GetInt32(6)
+                ItemCount = reader.GetInt32(6),
+                Status = reader.GetString(7),
+                CustomerPhone = reader.GetString(8),
+                RefundedAmount = reader.GetDecimal(9)
             });
         }
 
@@ -607,6 +613,205 @@ public sealed class PosDatabase
             ItemCount = itemCount
         };
         return new ReceiptDetails { Sale = sale, Items = items, AmountPaid = amountPaid };
+    }
+
+    public RefundOrderSummary? GetRefundOrderSummary(long saleId)
+    {
+        using var connection = OpenConnection();
+        using var saleCommand = connection.CreateCommand();
+        saleCommand.CommandText = """
+            SELECT id, receipt_number, created_at, customer_name, payment_method, total,
+                   COALESCE(refunded_amount, 0), COALESCE(customer_phone, 'No phone number')
+            FROM sales
+            WHERE id = @id;
+            """;
+        saleCommand.Parameters.AddWithValue("@id", saleId);
+        using var saleReader = saleCommand.ExecuteReader();
+        if (!saleReader.Read())
+            return null;
+
+        var orderId = saleReader.GetInt64(0);
+        var receiptNumber = saleReader.GetString(1);
+        var createdAt = DateTime.Parse(saleReader.GetString(2));
+        var customerName = saleReader.GetString(3);
+        var paymentMethod = saleReader.GetString(4);
+        var totalAmount = saleReader.GetDecimal(5);
+        var alreadyRefunded = saleReader.GetDecimal(6);
+        var customerPhone = saleReader.GetString(7);
+        saleReader.Close();
+
+        if (customerPhone == "No phone number" || string.IsNullOrWhiteSpace(customerPhone))
+        {
+            using var custCommand = connection.CreateCommand();
+            custCommand.CommandText = "SELECT phone FROM customers WHERE name = @name LIMIT 1;";
+            custCommand.Parameters.AddWithValue("@name", customerName);
+            var phoneObj = custCommand.ExecuteScalar();
+            if (phoneObj is string p && !string.IsNullOrWhiteSpace(p))
+                customerPhone = p;
+        }
+
+        using var itemsCommand = connection.CreateCommand();
+        itemsCommand.CommandText = """
+            SELECT si.id, si.product_id, si.product_name, si.sku, si.unit_price, si.quantity,
+                   COALESCE(si.refunded_quantity, 0), p.image_url
+            FROM sale_items si
+            LEFT JOIN products p ON p.id = si.product_id
+            WHERE si.sale_id = @id
+            ORDER BY si.id;
+            """;
+        itemsCommand.Parameters.AddWithValue("@id", saleId);
+        using var itemsReader = itemsCommand.ExecuteReader();
+        var items = new List<RefundLineItem>();
+        int totalItemCount = 0;
+        while (itemsReader.Read())
+        {
+            var origQty = itemsReader.GetInt32(5);
+            totalItemCount += origQty;
+            items.Add(new RefundLineItem
+            {
+                OrderItemId = itemsReader.GetInt64(0),
+                ProductId = itemsReader.GetInt64(1),
+                ProductName = itemsReader.GetString(2),
+                Sku = itemsReader.GetString(3),
+                UnitPrice = itemsReader.GetDecimal(4),
+                OriginalQty = origQty,
+                RefundedQty = itemsReader.GetInt32(6),
+                ImageUrl = itemsReader.IsDBNull(7) ? null : itemsReader.GetString(7)
+            });
+        }
+
+        return new RefundOrderSummary
+        {
+            OrderId = orderId,
+            ReceiptNumber = receiptNumber,
+            CreatedAt = createdAt,
+            CustomerName = customerName,
+            CustomerPhone = customerPhone,
+            PaymentMethod = paymentMethod,
+            TotalAmount = totalAmount,
+            AlreadyRefundedAmount = alreadyRefunded,
+            TotalItemCount = totalItemCount,
+            Items = items
+        };
+    }
+
+    public (bool Success, string Message, decimal TotalRefunded) ProcessRefund(
+        long orderId,
+        List<RefundLineItem> refundLines,
+        string reason,
+        string notes,
+        string cashierName)
+    {
+        var activeRefunds = refundLines.Where(l => l.RefundQty > 0).ToList();
+        if (activeRefunds.Count == 0)
+            return (false, "Please select at least one item and quantity to refund.", 0);
+
+        if (string.IsNullOrWhiteSpace(reason) || reason == "Select a Reason")
+            return (false, "Please select a refund reason.", 0);
+
+        using var connection = OpenConnection();
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            using var checkCommand = connection.CreateCommand();
+            checkCommand.Transaction = transaction;
+            checkCommand.CommandText = "SELECT payment_method, total, COALESCE(refunded_amount, 0) FROM sales WHERE id = @id;";
+            checkCommand.Parameters.AddWithValue("@id", orderId);
+            using var checkReader = checkCommand.ExecuteReader();
+            if (!checkReader.Read())
+                return (false, "Order not found.", 0);
+
+            var paymentMethod = checkReader.GetString(0);
+            var orderTotal = checkReader.GetDecimal(1);
+            var alreadyRefunded = checkReader.GetDecimal(2);
+            checkReader.Close();
+
+            decimal totalRefundAmount = 0m;
+            var nowStr = DateTime.Now.ToString("O");
+
+            foreach (var line in activeRefunds)
+            {
+                var lineAmount = line.UnitPrice * line.RefundQty;
+                totalRefundAmount += lineAmount;
+
+                using var itemUpdate = connection.CreateCommand();
+                itemUpdate.Transaction = transaction;
+                itemUpdate.CommandText = """
+                    UPDATE sale_items
+                    SET refunded_quantity = COALESCE(refunded_quantity, 0) + @qty
+                    WHERE id = @id;
+                    """;
+                itemUpdate.Parameters.AddWithValue("@qty", line.RefundQty);
+                itemUpdate.Parameters.AddWithValue("@id", line.OrderItemId);
+                itemUpdate.ExecuteNonQuery();
+
+                using var stockUpdate = connection.CreateCommand();
+                stockUpdate.Transaction = transaction;
+                stockUpdate.CommandText = """
+                    UPDATE products
+                    SET stock = stock + @qty
+                    WHERE id = @productId;
+                    """;
+                stockUpdate.Parameters.AddWithValue("@qty", line.RefundQty);
+                stockUpdate.Parameters.AddWithValue("@productId", line.ProductId);
+                stockUpdate.ExecuteNonQuery();
+
+                using var rfTxCmd = connection.CreateCommand();
+                rfTxCmd.Transaction = transaction;
+                rfTxCmd.CommandText = """
+                    INSERT INTO refund_transactions
+                        (order_id, order_item_id, product_id, product_name, sku, refunded_qty, refund_amount, refund_reason, refund_notes, payment_method, created_at, cashier_name)
+                    VALUES
+                        (@orderId, @orderItemId, @productId, @name, @sku, @qty, @amount, @reason, @notes, @method, @created, @cashier);
+                    """;
+                rfTxCmd.Parameters.AddWithValue("@orderId", orderId);
+                rfTxCmd.Parameters.AddWithValue("@orderItemId", line.OrderItemId);
+                rfTxCmd.Parameters.AddWithValue("@productId", line.ProductId);
+                rfTxCmd.Parameters.AddWithValue("@name", line.ProductName);
+                rfTxCmd.Parameters.AddWithValue("@sku", line.Sku);
+                rfTxCmd.Parameters.AddWithValue("@qty", line.RefundQty);
+                rfTxCmd.Parameters.AddWithValue("@amount", lineAmount);
+                rfTxCmd.Parameters.AddWithValue("@reason", reason);
+                rfTxCmd.Parameters.AddWithValue("@notes", notes ?? "");
+                rfTxCmd.Parameters.AddWithValue("@method", paymentMethod);
+                rfTxCmd.Parameters.AddWithValue("@created", nowStr);
+                rfTxCmd.Parameters.AddWithValue("@cashier", string.IsNullOrWhiteSpace(cashierName) ? "Praveen Balaji" : cashierName);
+                rfTxCmd.ExecuteNonQuery();
+            }
+
+            using var countRemainingCmd = connection.CreateCommand();
+            countRemainingCmd.Transaction = transaction;
+            countRemainingCmd.CommandText = """
+                SELECT COALESCE(SUM(quantity - refunded_quantity), 0)
+                FROM sale_items
+                WHERE sale_id = @orderId;
+                """;
+            countRemainingCmd.Parameters.AddWithValue("@orderId", orderId);
+            var remainingItems = Convert.ToInt32(countRemainingCmd.ExecuteScalar());
+
+            var newStatus = remainingItems <= 0 ? "Refunded" : "Partially Refunded";
+
+            using var saleUpdate = connection.CreateCommand();
+            saleUpdate.Transaction = transaction;
+            saleUpdate.CommandText = """
+                UPDATE sales
+                SET refunded_amount = COALESCE(refunded_amount, 0) + @refundAmount,
+                    order_status = @status
+                WHERE id = @orderId;
+                """;
+            saleUpdate.Parameters.AddWithValue("@refundAmount", totalRefundAmount);
+            saleUpdate.Parameters.AddWithValue("@status", newStatus);
+            saleUpdate.Parameters.AddWithValue("@orderId", orderId);
+            saleUpdate.ExecuteNonQuery();
+
+            transaction.Commit();
+            return (true, "Refund processed successfully.", totalRefundAmount);
+        }
+        catch (Exception ex)
+        {
+            transaction.Rollback();
+            return (false, $"Failed to process refund: {ex.Message}", 0);
+        }
     }
 
     public ShiftSettlement? GetShiftSettlement(long shiftId)
@@ -935,10 +1140,29 @@ public sealed class PosDatabase
                 password_hash TEXT NOT NULL DEFAULT '',
                 is_active INTEGER NOT NULL DEFAULT 1
             );
+            CREATE TABLE IF NOT EXISTS refund_transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_id INTEGER NOT NULL REFERENCES sales(id),
+                order_item_id INTEGER NOT NULL REFERENCES sale_items(id),
+                product_id INTEGER NOT NULL REFERENCES products(id),
+                product_name TEXT NOT NULL,
+                sku TEXT NOT NULL,
+                refunded_qty INTEGER NOT NULL,
+                refund_amount NUMERIC NOT NULL,
+                refund_reason TEXT NOT NULL,
+                refund_notes TEXT NOT NULL DEFAULT '',
+                payment_method TEXT NOT NULL DEFAULT 'Cash',
+                created_at TEXT NOT NULL,
+                cashier_name TEXT NOT NULL DEFAULT 'Praveen Balaji'
+            );
             """;
         command.ExecuteNonQuery();
         EnsureColumn(connection, "admins", "password_hash", "TEXT NOT NULL DEFAULT ''");
         EnsureColumn(connection, "sales", "customer_name", "TEXT NOT NULL DEFAULT 'Walking Customer'");
+        EnsureColumn(connection, "sales", "customer_phone", "TEXT NOT NULL DEFAULT 'No phone number'");
+        EnsureColumn(connection, "sales", "order_status", "TEXT NOT NULL DEFAULT 'Delivered'");
+        EnsureColumn(connection, "sales", "refunded_amount", "NUMERIC NOT NULL DEFAULT 0");
+        EnsureColumn(connection, "sale_items", "refunded_quantity", "INTEGER NOT NULL DEFAULT 0");
         EnsureColumn(connection, "sales", "shift_id", "INTEGER NULL REFERENCES pos_shifts(id)");
         EnsureColumn(connection, "sales", "cashier_name", "TEXT NOT NULL DEFAULT 'Praveen Balaji'");
         EnsureColumn(connection, "sales", "cashier_email", "TEXT NOT NULL DEFAULT 'praveenbalajimindzmap@gmail.com'");

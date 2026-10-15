@@ -32,6 +32,7 @@ public partial class MainWindow : Window
     private CustomerDisplayWindow? customerDisplayWindow;
     private decimal currentGstRate = 5m;
     private bool isDarkMode;
+    private RefundOrderSummary? currentRefundSummary;
 
     // Inbuilt Desk Calculator State
     private string calcDisplay = "0";
@@ -1089,6 +1090,37 @@ public partial class MainWindow : Window
         if ((sender as FrameworkElement)?.DataContext is not SaleSummary sale)
             return;
 
+        OpenReceipt(sale);
+    }
+
+    private void ReceiptActionMore_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.ContextMenu != null)
+        {
+            btn.ContextMenu.PlacementTarget = btn;
+            btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            btn.ContextMenu.IsOpen = true;
+        }
+    }
+
+    private void ReceiptPrintMenu_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem mi && mi.DataContext is SaleSummary sale)
+        {
+            OpenReceipt(sale);
+        }
+    }
+
+    private void ReceiptRefundMenu_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem mi && mi.DataContext is SaleSummary sale)
+        {
+            OpenRefundOrder(sale.Id);
+        }
+    }
+
+    private void OpenReceipt(SaleSummary sale)
+    {
         try
         {
             var receipt = database.GetReceipt(sale.Id);
@@ -1106,6 +1138,167 @@ public partial class MainWindow : Window
             MessageBox.Show($"The receipt could not be opened.\n\n{ex.Message}",
                 "Receipt unavailable", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private void OpenRefundOrder(long saleId)
+    {
+        try
+        {
+            var summary = database.GetRefundOrderSummary(saleId);
+            if (summary == null)
+            {
+                MessageBox.Show("Order could not be loaded for refund.", "Refund Unavailable",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (summary.RemainingRefundableAmount <= 0)
+            {
+                MessageBox.Show("This order has already been fully refunded.", "Fully Refunded",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            currentRefundSummary = summary;
+            RefundOrderNumberText.Text = $"#{summary.ReceiptNumber}";
+            RefundOrderItemCountText.Text = $"{summary.TotalItemCount} Items";
+            RefundCustomerNameText.Text = summary.CustomerName;
+            RefundCustomerPhoneText.Text = summary.CustomerPhone;
+            RefundOrderDateText.Text = summary.CreatedAt.ToString("dd MMM yyyy");
+            RefundOrderTimeText.Text = summary.CreatedAt.ToString("hh:mm tt");
+            RefundPaymentMethodText.Text = summary.PaymentMethod;
+            RefundOrderTotalText.Text = $"₹{summary.TotalAmount:N2}";
+            RefundAsideMethodLabel.Text = $"Refund Amount ({summary.PaymentMethod})";
+
+            // Hook up change events
+            foreach (var item in summary.Items)
+            {
+                item.RefundQtyChanged += (s, ev) => UpdateRefundCalculations();
+            }
+
+            RefundItemsList.ItemsSource = summary.Items;
+            RefundShowingText.Text = $"Showing 1 - {summary.Items.Count} of {summary.Items.Count} Order Items";
+
+            RefundReasonComboBox.SelectedIndex = 0;
+            RefundNotesTextBox.Text = "";
+            RefundNotesCounterText.Text = "0/500";
+
+            UpdateRefundCalculations();
+            RefundOrderModal.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Failed to load refund details: {ex.Message}", "Refund Error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void UpdateRefundCalculations()
+    {
+        if (currentRefundSummary == null) return;
+
+        decimal totalRefund = currentRefundSummary.Items.Sum(i => i.RefundAmount);
+        RefundTotalAmountText.Text = $"₹{totalRefund:N2}";
+        decimal remaining = Math.Max(0, currentRefundSummary.RemainingRefundableAmount - totalRefund);
+        RefundRemainingRefundableText.Text = $"Remaining refundable amount: ₹{remaining:N2}";
+
+        ProcessRefundButton.IsEnabled = totalRefund > 0;
+        ProcessRefundButton.Opacity = totalRefund > 0 ? 1.0 : 0.6;
+    }
+
+    private void RefundQtyMinus_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is RefundLineItem item)
+        {
+            if (item.RefundQty > 0)
+            {
+                item.RefundQty--;
+            }
+        }
+    }
+
+    private void RefundQtyPlus_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is RefundLineItem item)
+        {
+            if (item.RefundQty < item.RemainingQty)
+            {
+                item.RefundQty++;
+            }
+        }
+    }
+
+    private void RefundNotesTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (RefundNotesCounterText != null && RefundNotesTextBox != null)
+        {
+            RefundNotesCounterText.Text = $"{RefundNotesTextBox.Text.Length}/500";
+        }
+    }
+
+    private void CloseRefundOrderModal_Click(object sender, RoutedEventArgs e)
+    {
+        RefundOrderModal.Visibility = Visibility.Collapsed;
+        currentRefundSummary = null;
+    }
+
+    private void ProcessRefund_Click(object sender, RoutedEventArgs e)
+    {
+        if (currentRefundSummary == null) return;
+
+        var selectedItems = currentRefundSummary.Items.Where(i => i.RefundQty > 0).ToList();
+        if (selectedItems.Count == 0)
+        {
+            MessageBox.Show("Please select at least one item and quantity to refund.", "No Items Selected",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var reason = (RefundReasonComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString();
+        if (string.IsNullOrWhiteSpace(reason) || reason == "Select a Reason")
+        {
+            MessageBox.Show("Please select a valid reason for the refund.", "Reason Required",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            RefundReasonComboBox.Focus();
+            return;
+        }
+
+        var totalRefund = selectedItems.Sum(i => i.RefundAmount);
+        var result = MessageBox.Show(
+            $"Are you sure you want to process a refund of ₹{totalRefund:N2} for Order #{currentRefundSummary.ReceiptNumber}?\n\nThis will restore the product stock and cannot be undone.",
+            "Confirm Refund",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes) return;
+
+        var notes = RefundNotesTextBox.Text.Trim();
+        var (success, message, refundedAmount) = database.ProcessRefund(
+            currentRefundSummary.OrderId,
+            currentRefundSummary.Items,
+            reason,
+            notes,
+            cashierName);
+
+        if (!success)
+        {
+            MessageBox.Show($"Refund could not be processed:\n{message}", "Refund Failed",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        MessageBox.Show(
+            $"Refund of ₹{refundedAmount:N2} processed successfully!\nProduct stock has been restored to the catalog.",
+            "Refund Completed",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+
+        RefundOrderModal.Visibility = Visibility.Collapsed;
+        currentRefundSummary = null;
+
+        RefreshCatalog();
+        RefreshProducts();
+        RefreshSales();
     }
 
     private void SetPage(string title, string subtitle, UIElement activePanel)
@@ -1985,6 +2178,13 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 return;
             }
+            if (RefundOrderModal.Visibility == Visibility.Visible)
+            {
+                RefundOrderModal.Visibility = Visibility.Collapsed;
+                currentRefundSummary = null;
+                e.Handled = true;
+                return;
+            }
             if (DayEndSettlementModal.Visibility == Visibility.Visible)
             {
                 DayEndSettlementModal.Visibility = Visibility.Collapsed;
@@ -2029,6 +2229,11 @@ public partial class MainWindow : Window
 
                 // Alt + Z: To close payment submit / modal
                 case System.Windows.Input.Key.Z:
+                    if (RefundOrderModal.Visibility == Visibility.Visible)
+                    {
+                        RefundOrderModal.Visibility = Visibility.Collapsed;
+                        currentRefundSummary = null;
+                    }
                     if (HoldOrderListModal.Visibility == Visibility.Visible)
                         HoldOrderListModal.Visibility = Visibility.Collapsed;
                     if (ReceiptsModal.Visibility == Visibility.Visible)
