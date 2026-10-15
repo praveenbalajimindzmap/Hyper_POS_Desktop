@@ -360,7 +360,7 @@
                     Margin="4,0,4,8"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top"
-                    Height="222" Cursor="Hand"
+                    Height="228" Cursor="Hand"
                     FocusVisualStyle="{x:Null}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
@@ -457,9 +457,9 @@
                         <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold"
                                    Foreground="#1F2937" TextWrapping="Wrap"
                                    MaxHeight="30" LineHeight="15" TextTrimming="CharacterEllipsis"
-                                   Margin="0,0,0,3"/>
-                        <!-- Original price (strikethrough red) -->
-                        <TextBlock FontSize="10.5" Foreground="#DC2626" Margin="0,0,0,1"
+                                   Margin="0,0,0,8"/>
+                        <!-- Original price (strikethrough red dashed price) -->
+                        <TextBlock FontSize="10.5" Foreground="#DC2626" Margin="0,0,0,2"
                                    Visibility="{Binding HasDiscount, Converter={StaticResource BoolToVisibilityConverter}}">
                             <TextBlock.TextDecorations>
                                 <TextDecorationCollection>
