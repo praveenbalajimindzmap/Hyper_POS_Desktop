@@ -534,6 +534,42 @@
                         <TextBlock Text="👤" FontSize="13"/>
                     </Button>
 
+                    <!-- Divider -->
+                    <Rectangle Width="1" Height="22" Fill="#E2E8F0" VerticalAlignment="Center" Margin="8,0,8,0"/>
+
+                    <!-- Screen Controls (Minimize, Maximize / Restore, Close) -->
+                    <!-- 1. Screen Minimize -->
+                    <Button x:Name="MinimizeWindowButton" Click="MinimizeWindow_Click"
+                            ToolTip="Minimize Screen"
+                            Width="32" Height="32" Padding="0"
+                            Style="{StaticResource FlatButton}"
+                            Background="#F8FAFC" BorderBrush="#E2E8F0"
+                            Margin="0,0,5,0">
+                        <TextBlock Text="—" FontSize="12" FontWeight="Bold" Foreground="#475569"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+
+                    <!-- 2. Screen Maximize / Restore -->
+                    <Button x:Name="MaximizeWindowButton" Click="MaximizeWindow_Click"
+                            ToolTip="Expand / Restore Screen"
+                            Width="32" Height="32" Padding="0"
+                            Style="{StaticResource FlatButton}"
+                            Background="#F8FAFC" BorderBrush="#E2E8F0"
+                            Margin="0,0,5,0">
+                        <TextBlock x:Name="MaximizeIconText" Text="🗖" FontSize="13" Foreground="#475569"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+
+                    <!-- 3. Screen Close -->
+                    <Button x:Name="CloseWindowButton" Click="CloseWindow_Click"
+                            ToolTip="Close POS Application"
+                            Width="32" Height="32" Padding="0"
+                            Style="{StaticResource FlatButton}"
+                            Background="#FEE2E2" BorderBrush="#FECACA">
+                        <TextBlock Text="✕" FontSize="13" FontWeight="Bold" Foreground="#DC2626"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+
                     <!-- Hidden Header elements (Preserved for C# code-behind compatibility without breaking builds) -->
                     <StackPanel x:Name="HiddenHeaderControls" Visibility="Collapsed">
                         <Button x:Name="PosNav" Click="ShowPos_Click"/>
@@ -544,10 +580,6 @@
                         <Button Content="⚙" Click="SetupProductSync_Click"/>
                         <TextBlock x:Name="SyncStatusText"/>
                         <TextBlock x:Name="CashierRoleLabel"/>
-                        <Button x:Name="MinimizeWindowButton" Click="MinimizeWindow_Click"/>
-                        <Button x:Name="MaximizeWindowButton" Click="MaximizeWindow_Click"/>
-                        <TextBlock x:Name="MaximizeIconText"/>
-                        <Button x:Name="CloseWindowButton" Click="CloseWindow_Click"/>
                     </StackPanel>
                 </StackPanel>
             </DockPanel>
