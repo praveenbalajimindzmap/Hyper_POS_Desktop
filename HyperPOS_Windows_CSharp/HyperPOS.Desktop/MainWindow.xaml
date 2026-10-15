@@ -356,11 +356,11 @@
         <DataTemplate x:Key="ProductCardTemplate">
             <Button Click="ProductCard_Click"
                     Background="White" BorderBrush="#E5E7EB"
-                    BorderThickness="1" Padding="8,8,8,10"
-                    Margin="4,0,4,10"
+                    BorderThickness="1" Padding="7,7,7,8"
+                    Margin="4,0,4,8"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top"
-                    Height="296" Cursor="Hand"
+                    Height="222" Cursor="Hand"
                     FocusVisualStyle="{x:Null}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
@@ -384,7 +384,7 @@
                 </Button.Template>
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="136"/>
+                        <RowDefinition Height="114"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
@@ -392,7 +392,7 @@
                     <Border Grid.Row="0" CornerRadius="6" ClipToBounds="True" Background="#F3F4F6">
                         <Grid>
                             <!-- Fallback shopping bag icon -->
-                            <Path Width="36" Height="40" Stretch="Fill"
+                            <Path Width="28" Height="30" Stretch="Fill"
                                   Data="M4,8 L20,8 L19,21 L5,21 Z M8,8 C8,1 16,1 16,8"
                                   Stroke="#9AA1AB" StrokeThickness="1.5"
                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -404,43 +404,43 @@
 
                             <!-- Deal of the day / Flash Deals / Clearance Sale badge top-left -->
                             <Border HorizontalAlignment="Left" VerticalAlignment="Top"
-                                    Margin="6,6,0,0" Padding="8,3"
-                                    Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6"
+                                    Margin="5,5,0,0" Padding="6,2"
+                                    Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="5"
                                     Visibility="{Binding HasDealBadge, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" ShadowDepth="1" Direction="270" Opacity="0.1" Color="#000000"/>
                                 </Border.Effect>
-                                <TextBlock Text="{Binding DealBadge}" FontSize="9.5" FontWeight="SemiBold"
+                                <TextBlock Text="{Binding DealBadge}" FontSize="8.5" FontWeight="SemiBold"
                                            Foreground="#334155"/>
                             </Border>
 
                             <!-- Stock badge bottom-left -->
                             <Border HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                                    Margin="6,0,0,6" Padding="8,2" CornerRadius="4"
+                                    Margin="5,0,0,5" Padding="6,1.5" CornerRadius="4"
                                     Background="{Binding StockBadgeColor}">
-                                <TextBlock Text="{Binding StockBadgeText}" FontSize="9.5" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock Text="{Binding StockBadgeText}" FontSize="8.5" FontWeight="Bold" Foreground="White"/>
                             </Border>
 
                             <!-- Quantity stepper bar overlay centered in the middle of the image -->
                             <Border HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    Background="White" CornerRadius="12" Padding="4,3"
+                                    Background="White" CornerRadius="10" Padding="3,2"
                                     BorderBrush="#E2E8F0" BorderThickness="1"
                                     Visibility="{Binding IsInCart, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <Border.Effect>
-                                    <DropShadowEffect BlurRadius="12" ShadowDepth="2" Direction="270" Opacity="0.18" Color="#000000"/>
+                                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Direction="270" Opacity="0.18" Color="#000000"/>
                                 </Border.Effect>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="—" Width="26" Height="26"
+                                    <Button Content="—" Width="22" Height="22"
                                             Style="{StaticResource CardStepperBtn}"
-                                            FontSize="11" FontWeight="Bold"
+                                            FontSize="10" FontWeight="Bold"
                                             Click="CardDecreaseQuantity_Click" Tag="{Binding}"/>
                                     <TextBlock Text="{Binding CartQuantity}"
-                                               MinWidth="22" TextAlignment="Center"
-                                               Foreground="#1E3A8A" FontWeight="Bold" FontSize="13"
-                                               VerticalAlignment="Center" Margin="4,0"/>
-                                    <Button Content="+" Width="26" Height="26"
+                                               MinWidth="18" TextAlignment="Center"
+                                               Foreground="#1E3A8A" FontWeight="Bold" FontSize="11.5"
+                                               VerticalAlignment="Center" Margin="3,0"/>
+                                    <Button Content="+" Width="22" Height="22"
                                             Style="{StaticResource CardStepperBtn}"
-                                            FontSize="13" FontWeight="Bold"
+                                            FontSize="11.5" FontWeight="Bold"
                                             Click="CardIncreaseQuantity_Click" Tag="{Binding}"/>
                                 </StackPanel>
                             </Border>
@@ -448,18 +448,18 @@
                     </Border>
 
                     <!-- Product Info -->
-                    <StackPanel Grid.Row="1" Margin="0,8,0,2">
+                    <StackPanel Grid.Row="1" Margin="0,5,0,0">
                         <!-- SKU + Category -->
                         <TextBlock Text="{Binding SkuCategoryLine}"
-                                   FontSize="10.5" Foreground="#9CA3AF"
+                                   FontSize="10" Foreground="#858D9D"
                                    TextTrimming="CharacterEllipsis" Margin="0,0,0,2"/>
                         <!-- Name -->
-                        <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
+                        <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold"
                                    Foreground="#1F2937" TextWrapping="Wrap"
-                                   MaxHeight="34" TextTrimming="CharacterEllipsis"
-                                   Margin="0,0,0,4"/>
+                                   MaxHeight="30" LineHeight="15" TextTrimming="CharacterEllipsis"
+                                   Margin="0,0,0,3"/>
                         <!-- Original price (strikethrough red) -->
-                        <TextBlock FontSize="11.5" Foreground="#DC2626" Margin="0,0,0,2"
+                        <TextBlock FontSize="10.5" Foreground="#DC2626" Margin="0,0,0,1"
                                    Visibility="{Binding HasDiscount, Converter={StaticResource BoolToVisibilityConverter}}">
                             <TextBlock.TextDecorations>
                                 <TextDecorationCollection>
@@ -471,15 +471,15 @@
                             </TextBlock.Text>
                         </TextBlock>
                         <!-- Discounted price + Off badge -->
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,0">
                             <TextBlock Text="{Binding Price, StringFormat=₹{0:N2}}"
-                                       FontSize="14" FontWeight="Bold" Foreground="#111827"
+                                       FontSize="12.5" FontWeight="Bold" Foreground="#111827"
                                        VerticalAlignment="Center"/>
-                            <Border Margin="6,0,0,0" Padding="6,1.5" CornerRadius="999"
+                            <Border Margin="6,0,0,0" Padding="5,1" CornerRadius="999"
                                     Background="#E6F7EB" BorderBrush="#A7DFBF" BorderThickness="1"
                                     Visibility="{Binding HasDiscount, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock Text="{Binding DiscountBadge}"
-                                           FontSize="9.5" FontWeight="Bold" Foreground="#1E9E50"/>
+                                           FontSize="8.5" FontWeight="Bold" Foreground="#1E9E50"/>
                             </Border>
                         </StackPanel>
                     </StackPanel>
