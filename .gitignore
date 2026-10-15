@@ -1,0 +1,30 @@
+# Build results & Binaries
+[Bb]in/
+[Oo]bj/
+*.exe
+*.dll
+*.pdb
+*.zip
+
+# Raw database dumps with web API keys/secrets
+*.sql
+
+# Visual Studio / VS Code
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# WebView2 & Browser cache
+*.WebView2/
+EBWebView/
+
+# Distribution packages (can be built from source using 'dotnet publish')
+Saraa_Boutique_POS_Portable/
+HyperPOS_App/
+
+# Logs & temp files
+*.log
+scratch/

@@ -1,0 +1,162 @@
+<Window x:Class="HyperPOS.Desktop.DayEndSettlementWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Day End Settlement" Width="1080" Height="760" MinWidth="900" MinHeight="650"
+        WindowStartupLocation="CenterOwner" Background="#F7F8FC">
+    <Grid Margin="22">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <DockPanel>
+            <Button Content="×" DockPanel.Dock="Right" Width="30" Height="30"
+                    Click="Cancel_Click" Background="White" BorderBrush="#E5E7EB"
+                    Foreground="#6B7280" FontSize="17"/>
+            <StackPanel>
+                <TextBlock Text="Day End Settlement" FontSize="22" FontWeight="Bold"/>
+                <TextBlock Text="Review this shift’s transactions and reconcile the cash drawer before closing."
+                           Foreground="#737B8C" FontSize="12" Margin="0,4,0,0"/>
+            </StackPanel>
+        </DockPanel>
+        <UniformGrid Grid.Row="1" Columns="5" Margin="0,15,0,12">
+            <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="10">
+                <StackPanel><TextBlock Text="BUSINESS DAY" FontSize="9" Foreground="#82899A"/>
+                    <TextBlock x:Name="BusinessDateText" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel>
+            </Border>
+            <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="10">
+                <StackPanel><TextBlock Text="SHIFT OPENED" FontSize="9" Foreground="#82899A"/>
+                    <TextBlock x:Name="OpenedAtText" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel>
+            </Border>
+            <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="10">
+                <StackPanel><TextBlock Text="TOTAL ORDERS" FontSize="9" Foreground="#82899A"/>
+                    <TextBlock x:Name="OrderCountText" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel>
+            </Border>
+            <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="10">
+                <StackPanel><TextBlock Text="STORE" FontSize="9" Foreground="#82899A"/>
+                    <TextBlock Text="JomJom POS · Local" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel>
+            </Border>
+            <Border Background="#EEF0FF" BorderBrush="#DCE0FA" BorderThickness="1" Padding="10">
+                <StackPanel><TextBlock Text="STATUS" FontSize="9" Foreground="#737B8C"/>
+                    <TextBlock Text="Ready to close" FontWeight="Bold" Foreground="#4149A5" Margin="0,5,0,0"/></StackPanel>
+            </Border>
+        </UniformGrid>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.9*"/>
+                <ColumnDefinition Width="1.1*"/>
+                <ColumnDefinition Width="0.9*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                <TextBlock Text="Payment Summary" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
+                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="11">
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,9"><TextBlock Text="Total sales" Foreground="#697386"/>
+                            <TextBlock x:Name="TotalSalesText" DockPanel.Dock="Right" FontWeight="Bold"/></DockPanel>
+                        <DockPanel Margin="0,0,0,9"><TextBlock Text="Items sold" Foreground="#697386"/>
+                            <TextBlock x:Name="ItemsSoldText" DockPanel.Dock="Right" FontWeight="Bold"/></DockPanel>
+                        <DockPanel><TextBlock Text="Net sales" FontWeight="Bold"/>
+                            <TextBlock x:Name="NetSalesText" DockPanel.Dock="Right" FontWeight="Bold" Foreground="#4149A5"/></DockPanel>
+                    </StackPanel>
+                </Border>
+                <TextBlock Text="Payment Method" FontSize="14" FontWeight="Bold" Margin="0,15,0,8"/>
+                <DataGrid x:Name="PaymentsGrid" AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserAddRows="False" HeadersVisibility="Column" RowHeight="36"
+                          ColumnHeaderHeight="34" GridLinesVisibility="None" Background="White"
+                          BorderBrush="#E5E7EB">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="METHOD" Binding="{Binding PaymentMethod}" Width="*"/>
+                        <DataGridTextColumn Header="ORDERS" Binding="{Binding OrderCount}" Width="65"/>
+                        <DataGridTextColumn Header="AMOUNT" Binding="{Binding Amount, StringFormat=₹{0:N2}}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                <TextBlock Text="Cash Count" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
+                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Margin="5,2,5,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/><ColumnDefinition Width="74"/>
+                                <ColumnDefinition Width="72"/><ColumnDefinition Width="74"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Denomination" Foreground="#81899A" FontSize="10"/>
+                            <TextBlock Grid.Column="1" Text="Value" Foreground="#81899A" FontSize="10" TextAlignment="Right"/>
+                            <TextBlock Grid.Column="2" Text="Quantity" Foreground="#81899A" FontSize="10" TextAlignment="Center"/>
+                            <TextBlock Grid.Column="3" Text="Total" Foreground="#81899A" FontSize="10" TextAlignment="Right"/>
+                        </Grid>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="350">
+                            <ItemsControl x:Name="DenominationsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="4,5">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/><ColumnDefinition Width="74"/>
+                                                <ColumnDefinition Width="72"/><ColumnDefinition Width="74"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Denomination, StringFormat=₹{0:N2}}"
+                                                       TextAlignment="Right" VerticalAlignment="Center"/>
+                                            <TextBox Grid.Column="2" Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}"
+                                                     Width="52" Height="30" HorizontalAlignment="Center"
+                                                     VerticalContentAlignment="Center" TextAlignment="Center"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding Total, StringFormat=₹{0:N2}}"
+                                                       TextAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                        <Border Grid.Row="2" Background="#EEF0FF" Margin="0,8,0,0" Padding="9">
+                            <DockPanel>
+                                <TextBlock Text="Total cash counted" FontWeight="Bold" Foreground="#4149A5"/>
+                                <TextBlock x:Name="CountedCashText" DockPanel.Dock="Right"
+                                           FontWeight="Bold" Foreground="#4149A5"/>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="Cash Reconciliation" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
+                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="12">
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,10"><TextBlock Text="Expected cash" Foreground="#596273"/>
+                            <TextBlock x:Name="ExpectedCashText" DockPanel.Dock="Right" FontWeight="Bold"/></DockPanel>
+                        <DockPanel Margin="0,0,0,10"><TextBlock Text="Counted cash" Foreground="#596273"/>
+                            <TextBlock x:Name="ReconciliationCountText" DockPanel.Dock="Right" FontWeight="Bold"/></DockPanel>
+                        <DockPanel><TextBlock Text="Difference" FontWeight="Bold"/>
+                            <TextBlock x:Name="DifferenceText" DockPanel.Dock="Right" FontWeight="Bold"/></DockPanel>
+                        <TextBlock Text="Difference reason" FontSize="10" Foreground="#737B8C" Margin="0,13,0,5"/>
+                        <ComboBox x:Name="DifferenceReasonBox" Height="34">
+                            <ComboBoxItem Content="Select a reason" IsSelected="True"/>
+                            <ComboBoxItem Content="Cash shortage"/>
+                            <ComboBoxItem Content="Cash excess"/>
+                            <ComboBoxItem Content="Cash drop / payout"/>
+                            <ComboBoxItem Content="Other"/>
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+                <TextBlock Text="Notes (optional)" FontSize="12" FontWeight="Bold" Margin="0,14,0,6"/>
+                <TextBox x:Name="NotesBox" Height="115" Padding="8" AcceptsReturn="True"
+                         TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" MaxLength="500"
+                         VerticalContentAlignment="Top"/>
+                <TextBlock x:Name="ValidationText" Foreground="#C4434D" FontSize="11"
+                           TextWrapping="Wrap" Margin="0,8,0,0"/>
+            </StackPanel>
+        </Grid>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button Content="Cancel" Width="100" Height="40" Margin="0,0,9,0"
+                    Click="Cancel_Click" Background="White" BorderBrush="#DDE1E9"/>
+            <Button Content="Close Shift" Width="140" Height="40" Click="CloseShift_Click"
+                    Background="#20A45A" Foreground="White" BorderThickness="0"
+                    FontWeight="SemiBold"/>
+        </StackPanel>
+    </Grid>
+</Window>
