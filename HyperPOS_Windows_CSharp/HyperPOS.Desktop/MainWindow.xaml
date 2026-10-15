@@ -356,10 +356,10 @@
         <DataTemplate x:Key="ProductCardTemplate">
             <Button Click="ProductCard_Click"
                     Background="White" BorderBrush="#E5E7EB"
-                    BorderThickness="1" Padding="8,8,8,10"
+                    BorderThickness="1" Padding="7,7,7,3"
                     Margin="4,0,4,8"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
+                    VerticalAlignment="Top"
                     Cursor="Hand"
                     FocusVisualStyle="{x:Null}">
                 <Button.Template>
@@ -449,18 +449,18 @@
                     </Border>
 
                     <!-- Product Info -->
-                    <StackPanel Grid.Row="1" Margin="0,6,0,0">
+                    <StackPanel Grid.Row="1" Margin="0,5,0,0">
                         <!-- SKU + Category -->
                         <TextBlock Text="{Binding SkuCategoryLine}"
                                    FontSize="10" Foreground="#858D9D"
-                                   TextTrimming="CharacterEllipsis" Margin="0,0,0,3"/>
+                                   TextTrimming="CharacterEllipsis" Margin="0,0,0,2"/>
                         <!-- Name -->
                         <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold"
                                    Foreground="#1F2937" TextWrapping="Wrap"
-                                   MinHeight="32" MaxHeight="32" LineHeight="16" TextTrimming="CharacterEllipsis"
-                                   Margin="0,0,0,6"/>
+                                   MaxHeight="30" LineHeight="15" TextTrimming="CharacterEllipsis"
+                                   Margin="0,0,0,5"/>
                         <!-- Original price (strikethrough red dashed price) -->
-                        <TextBlock FontSize="10.5" Foreground="#DC2626" Margin="0,0,0,3"
+                        <TextBlock FontSize="10.5" Foreground="#DC2626" Margin="0,0,0,2"
                                    Visibility="{Binding HasDiscount, Converter={StaticResource BoolToVisibilityConverter}}">
                             <TextBlock.TextDecorations>
                                 <TextDecorationCollection>
