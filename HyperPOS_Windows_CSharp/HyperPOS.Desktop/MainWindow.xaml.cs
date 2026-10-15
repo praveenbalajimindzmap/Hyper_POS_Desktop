@@ -15,6 +15,8 @@ public partial class MainWindow : Window
     private readonly ProductSyncService productSyncService = new();
     private readonly ProductCsvImporter productCsvImporter = new();
     private readonly ObservableCollection<CartItem> cart = [];
+    private readonly ObservableCollection<RefundCartItem> refundCartItems = [];
+    private string? activeRefundReceiptNumber;
     private string selectedCategory = "All";
     private string pendingCustomerName = "Walking Customer";
     private DateTime selectedReceiptDate = DateTime.Today;
@@ -79,6 +81,7 @@ public partial class MainWindow : Window
             ? "Offline · cache available"
             : "Offline · local catalog";
         CartItems.ItemsSource = cart;
+        RefundCartItems.ItemsSource = refundCartItems;
         SaraaSqlImporter.ImportSaraaProducts(database);
         RefreshCatalog();
         RefreshProducts();
@@ -137,7 +140,7 @@ public partial class MainWindow : Window
             var count = category == "All" 
                 ? allProducts.Count 
                 : allProducts.Count(p => string.Equals(p.Category, category, StringComparison.OrdinalIgnoreCase));
-            var displayLabel = category == "All" ? $"All categories ({count})" : $"{category} ({count})";
+            var displayLabel = category == "All" ? $"▦ All categories ({count})" : $"{GetCategoryIcon(category)}{category} ({count})";
 
             var isSelected = category == selectedCategory;
             var button = new Button
@@ -163,6 +166,21 @@ public partial class MainWindow : Window
             CategoryButtons.Children.Add(button);
         }
     }
+
+    private static string GetCategoryIcon(string category) => category.ToLowerInvariant() switch
+    {
+        "all" => "▦ ",
+        var c when c.Contains("saree") => "👗 ",
+        var c when c.Contains("salwar") || c.Contains("suit") || c.Contains("kurti") => "👘 ",
+        var c when c.Contains("handbag") || c.Contains("bag") => "👜 ",
+        var c when c.Contains("access") => "👓 ",
+        var c when c.Contains("flower") => "🌸 ",
+        var c when c.Contains("jewel") => "💎 ",
+        var c when c.Contains("men") => "👔 ",
+        var c when c.Contains("shirt") || c.Contains("pant") => "👕 ",
+        var c when c.Contains("kid") || c.Contains("toy") => "🧸 ",
+        _ => "🏷️ "
+    };
 
     private void RefreshProducts() => ProductsGrid.ItemsSource = database.GetProducts();
     private void RefreshSales()
@@ -576,12 +594,14 @@ public partial class MainWindow : Window
     private void ClearCart_Click(object sender, RoutedEventArgs e)
     {
         cart.Clear();
+        refundCartItems.Clear();
+        activeRefundReceiptNumber = null;
         UpdateCartSummary();
     }
 
     private void UpdateCartSummary()
     {
-        if (cart.Count == 0)
+        if (cart.Count == 0 && refundCartItems.Count == 0)
         {
             pendingCustomerName = selectedCustomer?.Name ?? "Walking Customer";
             extraDiscountRate = 0m;
@@ -622,25 +642,73 @@ public partial class MainWindow : Window
         var gstAmount = Math.Round(taxableAmount * (currentGstRate / 100m), 2);
         var cgst = Math.Round(gstAmount / 2m, 2);
         var sgst = gstAmount - cgst;
-        currentPayableTotal = taxableAmount + gstAmount;
 
+        // Refund Calculations for Exchange / Return
+        var totalRefund = refundCartItems.Sum(item => item.RefundTotal);
+
+        if (refundCartItems.Count > 0)
+        {
+            if (RefundedProductsSection != null)
+            {
+                RefundedProductsSection.Visibility = Visibility.Visible;
+                RefundReceiptNumText.Text = $"Refunded Products #{activeRefundReceiptNumber}";
+                RefundItemSummaryText.Text = $"{refundCartItems.Sum(i => i.Quantity)} Items • - ₹{totalRefund:N2}";
+            }
+            if (RefundedAmountRow != null)
+            {
+                RefundedAmountRow.Visibility = Visibility.Visible;
+                RefundedAmountLabel.Text = $"Refunded Amount (#{activeRefundReceiptNumber}, {refundCartItems.Sum(i => i.Quantity)} Items)";
+                RefundedAmountText.Text = $"- ₹{totalRefund:N2}";
+            }
+            if (NewProductsHeader != null)
+            {
+                NewProductsHeader.Visibility = cart.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                NewItemsCountText.Text = $"{cart.Count} Items";
+            }
+        }
+        else
+        {
+            if (RefundedProductsSection != null) RefundedProductsSection.Visibility = Visibility.Collapsed;
+            if (RefundedAmountRow != null) RefundedAmountRow.Visibility = Visibility.Collapsed;
+            if (NewProductsHeader != null) NewProductsHeader.Visibility = Visibility.Collapsed;
+        }
+
+        currentPayableTotal = (taxableAmount + gstAmount) - totalRefund;
+
+        var hasAnyItems = cart.Count > 0 || refundCartItems.Count > 0;
         if (EmptyCartIllustration != null)
         {
-            EmptyCartIllustration.Visibility = cart.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            EmptyCartIllustration.Visibility = hasAnyItems ? Visibility.Collapsed : Visibility.Visible;
         }
         if (CartItemsScrollViewer != null)
         {
-            CartItemsScrollViewer.Visibility = cart.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            CartItemsScrollViewer.Visibility = hasAnyItems ? Visibility.Visible : Visibility.Collapsed;
         }
 
         var culture = new System.Globalization.CultureInfo("en-IN");
-        CartCountText.Text = $"{cart.Count} Items ({count} Units)";
+        var totalItemCount = cart.Count + refundCartItems.Count;
+        var totalUnitCount = count + refundCartItems.Sum(i => i.Quantity);
+        CartCountText.Text = $"{totalItemCount} Items ({totalUnitCount} Units)";
         SubtotalText.Text = grossTotal.ToString("C2", culture);
         DiscountText.Text = totalDiscount > 0 ? $"- {totalDiscount.ToString("C2", culture)}" : "- ₹0.00";
-        TotalText.Text = currentPayableTotal.ToString("C2", culture);
+        TotalText.Text = Math.Max(0, currentPayableTotal).ToString("C2", culture);
         GstText.Text = $"₹{gstAmount:N2}";
-        CheckoutButton.IsEnabled = cart.Count > 0;
-        CheckoutButton.Opacity = cart.Count > 0 ? 1 : 0.55;
+
+        if (PayTenderAmountText != null)
+        {
+            PayTenderAmountText.Text = currentPayableTotal < 0
+                ? $"- ₹{Math.Abs(currentPayableTotal):N2}"
+                : currentPayableTotal.ToString("C2", culture);
+        }
+        if (PayTenderSubtitleText != null)
+        {
+            PayTenderSubtitleText.Text = currentPayableTotal < 0
+                ? "Refund Due to Customer"
+                : "Total Payable Amount";
+        }
+
+        CheckoutButton.IsEnabled = hasAnyItems;
+        CheckoutButton.Opacity = hasAnyItems ? 1 : 0.55;
 
         // Mirror to Customer-Facing Display if active
         if (customerDisplayWindow != null && customerDisplayWindow.IsLoaded)
@@ -661,15 +729,73 @@ public partial class MainWindow : Window
 
     private void Checkout_Click(object sender, RoutedEventArgs e)
     {
-        if (cart.Count == 0)
+        if (cart.Count == 0 && refundCartItems.Count == 0)
             return;
         if (!EnsureOpenShift())
             return;
+
+        if (currentPayableTotal < 0)
+        {
+            var refundDue = Math.Abs(currentPayableTotal);
+            var confirm = MessageBox.Show(
+                $"This is an Exchange transaction with a Net Refund Due to Customer: ₹{refundDue:N2}.\n\n" +
+                $"Refund ₹{refundDue:N2} to customer and complete exchange?",
+                "Complete Exchange & Refund",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            // Process refund
+            if (activeRefundReceiptNumber != null && currentRefundSummary != null)
+            {
+                database.ProcessRefund(
+                    currentRefundSummary.OrderId,
+                    currentRefundSummary.Items.Where(i => i.RefundQty > 0).ToList(),
+                    "Customer Exchange",
+                    "Exchange in POS",
+                    cashierName);
+            }
+
+            // If there were also new products purchased:
+            if (cart.Count > 0)
+            {
+                database.SaveSale(
+                    cart, "Exchange Balance", 0, pendingCustomerName, activeShift!.Id, cashierName, cashierEmail);
+            }
+
+            MessageBox.Show($"Exchange completed successfully!\nRefunded ₹{refundDue:N2} to customer.",
+                "Exchange Completed", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            cart.Clear();
+            refundCartItems.Clear();
+            activeRefundReceiptNumber = null;
+            selectedCustomer = null;
+            pendingCustomerName = "Walking Customer";
+            extraDiscountRate = 0m;
+            activeCoupon = null;
+            RefreshCatalog();
+            RefreshProducts();
+            RefreshSales();
+            UpdateCartSummary();
+            return;
+        }
 
         var total = currentPayableTotal > 0 ? currentPayableTotal : cart.Sum(item => item.LineTotal);
         var checkout = new CheckoutWindow(total, pendingCustomerName, selectedCustomer?.Phone ?? "") { Owner = this };
         if (checkout.ShowDialog() != true)
             return;
+
+        // Process refund portion if part of exchange
+        if (activeRefundReceiptNumber != null && currentRefundSummary != null && refundCartItems.Count > 0)
+        {
+            database.ProcessRefund(
+                currentRefundSummary.OrderId,
+                currentRefundSummary.Items.Where(i => i.RefundQty > 0).ToList(),
+                "Customer Exchange",
+                "Exchange in POS",
+                cashierName);
+        }
 
         string receiptNumber;
         try
@@ -689,6 +815,8 @@ public partial class MainWindow : Window
         checkout.LaunchWhatsAppReceipt(receiptNumber, total);
 
         cart.Clear();
+        refundCartItems.Clear();
+        activeRefundReceiptNumber = null;
         selectedCustomer = null;
         pendingCustomerName = "Walking Customer";
         extraDiscountRate = 0m;
@@ -1242,6 +1370,93 @@ public partial class MainWindow : Window
         if (sender is MenuItem mi && mi.DataContext is SaleSummary sale)
         {
             OpenRefundOrder(sale.Id);
+        }
+    }
+
+    private void ReceiptExchangeInPosMenu_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem mi && mi.DataContext is SaleSummary sale)
+        {
+            LoadRefundIntoPosCart(sale.Id);
+        }
+    }
+
+    private void RefundExchangeInPos_Click(object sender, RoutedEventArgs e)
+    {
+        if (currentRefundSummary == null) return;
+        var selectedItems = currentRefundSummary.Items.Where(i => i.RefundQty > 0).ToList();
+        if (selectedItems.Count == 0)
+        {
+            selectedItems = currentRefundSummary.Items.Where(i => i.IsRefundable).ToList();
+            foreach (var itm in selectedItems)
+            {
+                itm.RefundQty = itm.RemainingQty;
+            }
+        }
+
+        if (selectedItems.Count == 0)
+        {
+            MessageBox.Show("No refundable items found for this order.", "Cannot Exchange",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        activeRefundReceiptNumber = currentRefundSummary.ReceiptNumber;
+        refundCartItems.Clear();
+        var allProducts = database.GetProducts();
+
+        foreach (var item in selectedItems)
+        {
+            var prod = allProducts.FirstOrDefault(p => p.Sku == item.Sku || p.Name == item.ProductName)
+                ?? new Product
+                {
+                    Id = (int)item.ProductId,
+                    Name = item.ProductName,
+                    Sku = item.Sku,
+                    Price = item.UnitPrice,
+                    Stock = 999,
+                    Category = "Refunded"
+                };
+
+            refundCartItems.Add(new RefundCartItem
+            {
+                Product = prod,
+                ReceiptNumber = currentRefundSummary.ReceiptNumber,
+                UnitPrice = item.UnitPrice,
+                Quantity = item.RefundQty > 0 ? item.RefundQty : item.RemainingQty
+            });
+        }
+
+        CloseRefundOrderModal_Click(sender, e);
+        CloseReceiptsModal_Click(sender, e);
+        ShowPos_Click(sender, e);
+        UpdateCartSummary();
+    }
+
+    private void LoadRefundIntoPosCart(long saleId)
+    {
+        try
+        {
+            var summary = database.GetRefundOrderSummary(saleId);
+            if (summary == null || summary.RemainingRefundableAmount <= 0)
+            {
+                MessageBox.Show("This order has no items available for refund or exchange.",
+                    "No items available", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            currentRefundSummary = summary;
+            foreach (var itm in summary.Items)
+            {
+                itm.RefundQty = itm.RemainingQty;
+            }
+
+            RefundExchangeInPos_Click(this, new RoutedEventArgs());
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Could not load return items: {ex.Message}", "Exchange Error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
