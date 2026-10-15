@@ -39,12 +39,16 @@ public sealed class Product : INotifyPropertyChanged
 
     public bool IsInCart => CartQuantity > 0;
 
-    public string DealBadge => "Deal Of The Day";
+    public string DealBadge => Sku switch
+    {
+        "SB0007" => "Deal Of The Day",
+        "SB0011" => "Clearance Sale",
+        _ => "Flash Deals"
+    };
     public bool HasDealBadge => true;
     public bool IsOutOfStock => Stock <= 0;
-    public bool IsLowStock => Stock > 0 && Stock <= 5;
-    public string StockBadgeColor => IsOutOfStock ? "#DC2626" : (IsLowStock ? "#D97706" : "#16A34A");
-    public string StockBadgeText => IsOutOfStock ? "0 In Stock" : (IsLowStock ? $"⚡ Low Stock ({Stock})" : $"{Stock} In Stock");
+    public string StockBadgeColor => IsOutOfStock ? "#DC2626" : "#16A34A";
+    public string StockBadgeText => $"{Stock} In Stock";
     public string SkuCategoryLine => string.IsNullOrWhiteSpace(Category) || Category == "All" 
         ? Sku 
         : $"{Sku} • {Category}";

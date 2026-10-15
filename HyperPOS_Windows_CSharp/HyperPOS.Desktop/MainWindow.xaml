@@ -206,17 +206,17 @@
         <!-- ======= PRODUCT CARD TEMPLATE ======= -->
         <DataTemplate x:Key="ProductCardTemplate">
             <Button Click="ProductCard_Click"
-                    Background="White" BorderBrush="#E8ECF1"
-                    BorderThickness="1" Padding="9,9,9,12"
-                    Margin="0,0,10,12"
-                    Width="194" MinHeight="295" Cursor="Hand"
+                    Background="White" BorderBrush="#E5E7EB"
+                    BorderThickness="1" Padding="8,8,8,10"
+                    Margin="0,0,8,10"
+                    Width="176" MinHeight="288" Cursor="Hand"
                     FocusVisualStyle="{x:Null}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="10"
+                                CornerRadius="8"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter/>
                         </Border>
@@ -224,15 +224,15 @@
                 </Button.Template>
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="148"/>
+                        <RowDefinition Height="136"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!-- Product Image area -->
-                    <Border Grid.Row="0" CornerRadius="8" ClipToBounds="True" Background="#F3F4F6">
+                    <Border Grid.Row="0" CornerRadius="6" ClipToBounds="True" Background="#F3F4F6">
                         <Grid>
                             <!-- Fallback shopping bag icon -->
-                            <Path Width="44" Height="48" Stretch="Fill"
+                            <Path Width="36" Height="40" Stretch="Fill"
                                   Data="M4,8 L20,8 L19,21 L5,21 Z M8,8 C8,1 16,1 16,8"
                                   Stroke="#9AA1AB" StrokeThickness="1.5"
                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -242,45 +242,45 @@
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    RenderOptions.BitmapScalingMode="HighQuality"/>
 
-                            <!-- Deal of the day badge top-left (White rounded pill with subtle shadow) -->
+                            <!-- Deal of the day / Flash Deals / Clearance Sale badge top-left -->
                             <Border HorizontalAlignment="Left" VerticalAlignment="Top"
-                                    Margin="8,8,0,0" Padding="10,4"
-                                    Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8">
+                                    Margin="6,6,0,0" Padding="8,3"
+                                    Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6"
+                                    Visibility="{Binding HasDealBadge, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <Border.Effect>
-                                    <DropShadowEffect BlurRadius="6" ShadowDepth="1" Direction="270" Opacity="0.1" Color="#000000"/>
+                                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Direction="270" Opacity="0.1" Color="#000000"/>
                                 </Border.Effect>
-                                <TextBlock Text="{Binding DealBadge}" FontSize="10.5" FontWeight="SemiBold"
-                                           Foreground="#334155"
-                                           Visibility="{Binding HasDealBadge, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <TextBlock Text="{Binding DealBadge}" FontSize="9.5" FontWeight="SemiBold"
+                                           Foreground="#334155"/>
                             </Border>
 
                             <!-- Stock badge bottom-left -->
                             <Border HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                                    Margin="8,0,0,8" Padding="10,3" CornerRadius="6"
+                                    Margin="6,0,0,6" Padding="8,2" CornerRadius="4"
                                     Background="{Binding StockBadgeColor}">
-                                <TextBlock Text="{Binding StockBadgeText}" FontSize="10.5" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock Text="{Binding StockBadgeText}" FontSize="9.5" FontWeight="Bold" Foreground="White"/>
                             </Border>
 
-                            <!-- Quantity stepper bar overlay centered in the middle of the image (White capsule with grey buttons) -->
+                            <!-- Quantity stepper bar overlay centered in the middle of the image -->
                             <Border HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    Background="White" CornerRadius="14" Padding="5,4"
+                                    Background="White" CornerRadius="12" Padding="4,3"
                                     BorderBrush="#E2E8F0" BorderThickness="1"
                                     Visibility="{Binding IsInCart, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <Border.Effect>
-                                    <DropShadowEffect BlurRadius="14" ShadowDepth="2" Direction="270" Opacity="0.18" Color="#000000"/>
+                                    <DropShadowEffect BlurRadius="12" ShadowDepth="2" Direction="270" Opacity="0.18" Color="#000000"/>
                                 </Border.Effect>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="—" Width="28" Height="28"
+                                    <Button Content="—" Width="26" Height="26"
                                             Style="{StaticResource CardStepperBtn}"
-                                            FontSize="12" FontWeight="Bold"
+                                            FontSize="11" FontWeight="Bold"
                                             Click="CardDecreaseQuantity_Click" Tag="{Binding}"/>
                                     <TextBlock Text="{Binding CartQuantity}"
-                                               MinWidth="26" TextAlignment="Center"
-                                               Foreground="#1E3A8A" FontWeight="Bold" FontSize="14"
-                                               VerticalAlignment="Center" Margin="6,0"/>
-                                    <Button Content="+" Width="28" Height="28"
+                                               MinWidth="22" TextAlignment="Center"
+                                               Foreground="#1E3A8A" FontWeight="Bold" FontSize="13"
+                                               VerticalAlignment="Center" Margin="4,0"/>
+                                    <Button Content="+" Width="26" Height="26"
                                             Style="{StaticResource CardStepperBtn}"
-                                            FontSize="14" FontWeight="Bold"
+                                            FontSize="13" FontWeight="Bold"
                                             Click="CardIncreaseQuantity_Click" Tag="{Binding}"/>
                                 </StackPanel>
                             </Border>
@@ -288,18 +288,18 @@
                     </Border>
 
                     <!-- Product Info -->
-                    <StackPanel Grid.Row="1" Margin="0,10,0,4">
+                    <StackPanel Grid.Row="1" Margin="0,8,0,2">
                         <!-- SKU + Category -->
                         <TextBlock Text="{Binding SkuCategoryLine}"
-                                   FontSize="11" Foreground="#9AA1AB"
-                                   TextTrimming="CharacterEllipsis" Margin="0,0,0,3"/>
+                                   FontSize="10.5" Foreground="#9CA3AF"
+                                   TextTrimming="CharacterEllipsis" Margin="0,0,0,2"/>
                         <!-- Name -->
-                        <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                        <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
                                    Foreground="#1F2937" TextWrapping="Wrap"
-                                   MaxHeight="38" TextTrimming="CharacterEllipsis"
+                                   MaxHeight="34" TextTrimming="CharacterEllipsis"
                                    Margin="0,0,0,4"/>
-                        <!-- Original price (strikethrough) -->
-                        <TextBlock FontSize="12" Foreground="#DC2626" Margin="0,0,0,3"
+                        <!-- Original price (strikethrough red) -->
+                        <TextBlock FontSize="11.5" Foreground="#DC2626" Margin="0,0,0,2"
                                    Visibility="{Binding HasDiscount, Converter={StaticResource BoolToVisibilityConverter}}">
                             <TextBlock.TextDecorations>
                                 <TextDecorationCollection>
@@ -311,15 +311,15 @@
                             </TextBlock.Text>
                         </TextBlock>
                         <!-- Discounted price + Off badge -->
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="{Binding Price, StringFormat=₹{0:N2}}"
-                                       FontSize="16" FontWeight="Bold" Foreground="#111827"
+                                       FontSize="14" FontWeight="Bold" Foreground="#111827"
                                        VerticalAlignment="Center"/>
-                            <Border Margin="8,0,0,0" Padding="8,2" CornerRadius="999"
+                            <Border Margin="6,0,0,0" Padding="6,1.5" CornerRadius="999"
                                     Background="#E6F7EB" BorderBrush="#A7DFBF" BorderThickness="1"
                                     Visibility="{Binding HasDiscount, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock Text="{Binding DiscountBadge}"
-                                           FontSize="10" FontWeight="Bold" Foreground="#1E9E50"/>
+                                           FontSize="9.5" FontWeight="Bold" Foreground="#1E9E50"/>
                             </Border>
                         </StackPanel>
                     </StackPanel>
@@ -344,49 +344,43 @@
 
         <!-- ==================== TOP HEADER ==================== -->
         <Border Grid.Row="0" Background="White" BorderBrush="#EEF1F4"
-                BorderThickness="1" CornerRadius="12"
-                Padding="14,10" Margin="0,0,0,8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
+                BorderThickness="1" CornerRadius="10"
+                Padding="14,9" Margin="0,0,0,8">
+            <DockPanel LastChildFill="True">
                 <!-- LEFT: Branding -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Logo box -->
-                    <Border Width="40" Height="40" CornerRadius="9" Background="#54587E">
-                        <TextBlock Text="D" Foreground="White" FontSize="22" FontWeight="Bold"
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Purple square logo box with letter 'D' -->
+                    <Border Width="38" Height="38" CornerRadius="7" Background="#484C7F">
+                        <TextBlock Text="D" Foreground="White" FontSize="20" FontWeight="Bold"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <!-- Brand info -->
                     <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
                             <TextBlock Text="Saraa Boutique" FontSize="15" FontWeight="Bold"
                                        Foreground="#1F2937" VerticalAlignment="Center"/>
                             <!-- Store pill -->
-                            <Border Background="#E6F7EB" CornerRadius="999" Padding="10,3" Margin="8,0,0,0">
-                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#1E9E50">
+                            <Border Background="#E6F7EB" CornerRadius="999" Padding="9,2.5" Margin="8,0,0,0" VerticalAlignment="Center">
+                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#16A34A">
                                     <Run Text="● "/>
                                     <Run Text="Store: India"/>
                                 </TextBlock>
                             </Border>
-                            <!-- Date/time pill -->
-                            <Border Background="Transparent" CornerRadius="999" Padding="8,3" Margin="5,0,0,0">
-                                <TextBlock x:Name="CurrentDateText" FontSize="11" Foreground="#4B5563"/>
+                            <!-- Clock / Date pill -->
+                            <Border Background="Transparent" Padding="8,2.5" Margin="4,0,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="CurrentDateText" FontSize="11.5" Foreground="#6B7280"/>
                             </Border>
                         </StackPanel>
-                        <!-- Cashier / Super Admin -->
-                        <TextBlock FontSize="11" Foreground="#6B7280">
-                            <Run x:Name="CashierRoleLabel" Text="Super Admin: "/>
-                            <Run x:Name="CashierNameText" Text="Praveen Balaji" FontWeight="SemiBold" Foreground="#374151"/>
+                        <!-- Cashier line: Cashier: Praveen Balaji -->
+                        <TextBlock FontSize="11.5" Foreground="#6B7280">
+                            <Run Text="👤 Cashier: "/>
+                            <Run x:Name="CashierNameText" Text="Praveen Balaji" FontWeight="Bold" Foreground="#1F2937"/>
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
 
-                <!-- CENTER: Opening Cash + Nav -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                <!-- RIGHT: Header Actions -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Opening Cash -->
                     <Button x:Name="OpeningCashButton" Click="OpeningCash_Click"
                             Background="Transparent" BorderThickness="0"
@@ -394,157 +388,99 @@
                         <StackPanel HorizontalAlignment="Right">
                             <TextBlock Text="Opening Cash" FontSize="10" Foreground="#9AA1AB"
                                        HorizontalAlignment="Right"/>
-                            <TextBlock x:Name="OpeningCashAmountText" Text="S$ 100.00" FontSize="15" FontWeight="Bold"
+                            <TextBlock x:Name="OpeningCashAmountText" Text="S$ 100.00" FontSize="14.5" FontWeight="Bold"
                                        Foreground="#111827" HorizontalAlignment="Right"/>
                         </StackPanel>
                     </Button>
-                    <!-- Three-dot menu -->
+
+                    <!-- Three-dot menu button -->
                     <Button x:Name="DayEndButton" Content="⋮" Click="DayEnd_Click"
                             Width="34" Height="34" Padding="0"
-                            Style="{StaticResource FlatButton}" Margin="0,0,6,0"
+                            Style="{StaticResource FlatButton}" Margin="0,0,8,0"
                             FontSize="16" Foreground="#6B7280"/>
-                    <!-- POS Register -->
-                    <Button x:Name="PosNav" Click="ShowPos_Click"
-                            Height="34" Padding="12,0" Margin="0,0,6,0"
-                            Background="#E6F7EB" BorderBrush="#289B37" BorderThickness="1"
-                            Style="{StaticResource FlatButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🛒  POS Register" FontSize="13" FontWeight="SemiBold"
-                                       Foreground="#1E9E50" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <!-- Hold Order -->
+
+                    <!-- Hold Order 0 button (orange pill) -->
                     <Button x:Name="HoldOrdersButton" Click="HoldOrders_Click"
-                            Height="34" Padding="12,0" Margin="0,0,6,0"
-                            Background="#FFF3E2" BorderBrush="#FFF3E2" BorderThickness="1"
+                            Height="34" Padding="12,0" Margin="0,0,8,0"
+                            Background="#FFF3E2" BorderBrush="#FED7AA" BorderThickness="1"
                             Style="{StaticResource FlatButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Hold Order " FontSize="13" FontWeight="SemiBold"
-                                       Foreground="#E8890C" VerticalAlignment="Center"/>
-                            <Border Background="#E8890C" CornerRadius="999" Padding="6,1" Margin="4,0,0,0">
-                                <TextBlock Text="0" FontSize="11" FontWeight="Bold" Foreground="White"
-                                           x:Name="HoldCountText"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="↺ Hold Order " FontSize="12.5" FontWeight="SemiBold"
+                                       Foreground="#EA580C" VerticalAlignment="Center"/>
+                            <Border Background="#EA580C" CornerRadius="999" Width="18" Height="18" Margin="4,0,0,0">
+                                <TextBlock Text="0" FontSize="10.5" FontWeight="Bold" Foreground="White"
+                                           x:Name="HoldCountText" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </StackPanel>
                     </Button>
-                    <!-- Receipts -->
+
+                    <!-- Receipts 1 button (blue pill) -->
                     <Button x:Name="SalesNav" Click="ShowSales_Click"
-                            Height="34" Padding="12,0" Margin="0,0,6,0"
-                            Background="#ECEEFF" BorderBrush="#ECEEFF" BorderThickness="1"
+                            Height="34" Padding="12,0" Margin="0,0,8,0"
+                            Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1"
                             Style="{StaticResource FlatButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Receipts " FontSize="13" FontWeight="SemiBold"
-                                       Foreground="#3B4BD8" VerticalAlignment="Center"/>
-                            <Border Background="#3B4BD8" CornerRadius="999" Padding="6,1" Margin="4,0,0,0">
-                                <TextBlock Text="0" FontSize="11" FontWeight="Bold" Foreground="White"
-                                           x:Name="ReceiptsCountText"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="📄 Receipts " FontSize="12.5" FontWeight="SemiBold"
+                                       Foreground="#4F46E5" VerticalAlignment="Center"/>
+                            <Border Background="#4F46E5" CornerRadius="999" Width="18" Height="18" Margin="4,0,0,0">
+                                <TextBlock Text="1" FontSize="10.5" FontWeight="Bold" Foreground="White"
+                                           x:Name="ReceiptsCountText" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </StackPanel>
                     </Button>
-                    <!-- Keyboard shortcut icon -->
+
+                    <!-- Keyboard shortcut icon button -->
                     <Button x:Name="ShortcutKeysButton" Content="⌨" Click="OpenShortCutKeys_Click" ToolTip="Short Cut Keys (Alt+K)"
                             Width="34" Height="34" Padding="0"
                             Style="{StaticResource FlatButton}"
-                            Margin="0,0,6,0" FontSize="14" Foreground="#6B7280"
-                            Background="#F1F3F5" BorderBrush="#E5E7EB"/>
-                    <!-- POS Calculator button -->
-                    <Button x:Name="CalculatorButton" Content="🧮" Click="ToggleCalculator_Click" ToolTip="POS Calculator (Alt+C)"
-                            Width="34" Height="34" Padding="0"
+                            Margin="0,0,8,0" FontSize="14" Foreground="#6B7280"
+                            Background="White" BorderBrush="#E5E7EB"/>
+
+                    <!-- Install App button -->
+                    <Button Content="Install App" Height="34" Padding="12,0"
                             Style="{StaticResource FlatButton}"
-                            Margin="0,0,6,0" FontSize="13" Foreground="#6B7280"
-                            Background="#F1F3F5" BorderBrush="#E5E7EB"/>
-                    <!-- Customer-Facing Display button -->
-                    <Button x:Name="CustomerDisplayButton" Content="🖥️" Click="ToggleCustomerDisplay_Click" ToolTip="Customer Display CFD (Alt+M)"
-                            Width="34" Height="34" Padding="0"
-                            Style="{StaticResource FlatButton}"
-                            Margin="0,0,6,0" FontSize="13" Foreground="#6B7280"
-                            Background="#F1F3F5" BorderBrush="#E5E7EB"/>
-                    <!-- Theme Toggle button -->
-                    <Button x:Name="ThemeToggleButton" Content="🌙" Click="ToggleTheme_Click" ToolTip="Toggle Light / Dark Mode"
-                            Width="34" Height="34" Padding="0"
-                            Style="{StaticResource FlatButton}"
-                            Margin="0,0,6,0" FontSize="13" Foreground="#6B7280"
-                            Background="#F1F3F5" BorderBrush="#E5E7EB"/>
-                    <!-- Fullscreen / Expand icon button -->
+                            Margin="0,0,8,0" FontSize="12" Foreground="#374151"
+                            Background="White" BorderBrush="#E5E7EB"/>
+
+                    <!-- Fullscreen / Expand button -->
                     <Button Content="⤢" Click="MaximizeWindow_Click" ToolTip="Expand / Restore Screen"
                             Width="34" Height="34" Padding="0"
                             Style="{StaticResource FlatButton}"
-                            Margin="0,0,6,0" FontSize="14" Foreground="#6B7280"
-                            Background="#F1F3F5" BorderBrush="#E5E7EB"/>
-                    <!-- Dashboard -->
-                    <Button x:Name="ProductsNav" Content="⊞  Dashboard" Click="ShowProducts_Click"
-                            Height="34" Padding="9,0" Margin="0,0,6,0"
+                            Margin="0,0,8,0" FontSize="14" Foreground="#6B7280"
+                            Background="White" BorderBrush="#E5E7EB"/>
+
+                    <!-- Dashboard button -->
+                    <Button x:Name="ProductsNav" Content="⊞ Dashboard" Click="ShowProducts_Click"
+                            Height="34" Padding="12,0" Margin="0,0,8,0"
                             Style="{StaticResource FlatButton}"
-                            Background="#F1F3F5" BorderBrush="#E5E7EB"
-                            FontSize="13" Foreground="#4B5563"/>
-                    <!-- User icon -->
+                            Background="White" BorderBrush="#E5E7EB"
+                            FontSize="12.5" Foreground="#374151"/>
+
+                    <!-- User icon button -->
                     <Button Width="34" Height="34" Padding="0"
                             Style="{StaticResource FlatButton}"
                             FontSize="14" Foreground="#6B7280"
-                            Background="#F1F3F5" BorderBrush="#E5E7EB">
-                        <TextBlock Text="&#x1F464;" FontSize="14"/>
+                            Background="White" BorderBrush="#E5E7EB">
+                        <TextBlock Text="👤" FontSize="13"/>
                     </Button>
-                </StackPanel>
 
-                <!-- RIGHT: Sync status + Window Controls (Minimize, Expandable, Close) -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
-                    <Button x:Name="SyncButton" Content="↻  Sync" Click="SyncProducts_Click"
-                            Height="34" Padding="10,0"
-                            Background="#E6F7EB" BorderBrush="#A7DFBF"
-                            Style="{StaticResource FlatButton}"
-                            FontSize="12" FontWeight="SemiBold" Foreground="#1E9E50"
-                            Margin="0,0,6,0"/>
-                    <Button Content="⚙" ToolTip="Sync settings" Click="SetupProductSync_Click"
-                            Width="34" Height="34" Padding="0"
-                            Style="{StaticResource FlatButton}"
-                            FontSize="14" Foreground="#6B7280" Margin="0,0,6,0"/>
-                    <StackPanel VerticalAlignment="Center" Margin="0,0,6,0">
-                        <TextBlock Text="DATABASE" FontSize="9" Foreground="#9AA1AB" HorizontalAlignment="Right"/>
-                        <TextBlock x:Name="SyncStatusText" Text="Offline · local catalog"
-                                   FontSize="10" FontWeight="SemiBold"
-                                   HorizontalAlignment="Right" TextTrimming="CharacterEllipsis"
-                                   MaxWidth="130" Foreground="#374151"/>
+                    <!-- Hidden Header elements (Preserved for C# code-behind compatibility without breaking builds) -->
+                    <StackPanel x:Name="HiddenHeaderControls" Visibility="Collapsed">
+                        <Button x:Name="PosNav" Click="ShowPos_Click"/>
+                        <Button x:Name="CalculatorButton" Click="ToggleCalculator_Click"/>
+                        <Button x:Name="CustomerDisplayButton" Click="ToggleCustomerDisplay_Click"/>
+                        <Button x:Name="ThemeToggleButton" Click="ToggleTheme_Click"/>
+                        <Button x:Name="SyncButton" Click="SyncProducts_Click"/>
+                        <Button Content="⚙" Click="SetupProductSync_Click"/>
+                        <TextBlock x:Name="SyncStatusText"/>
+                        <TextBlock x:Name="CashierRoleLabel"/>
+                        <Button x:Name="MinimizeWindowButton" Click="MinimizeWindow_Click"/>
+                        <Button x:Name="MaximizeWindowButton" Click="MaximizeWindow_Click"/>
+                        <TextBlock x:Name="MaximizeIconText"/>
+                        <Button x:Name="CloseWindowButton" Click="CloseWindow_Click"/>
                     </StackPanel>
-                    <Ellipse Width="9" Height="9" Fill="#24B36B" VerticalAlignment="Center" Margin="0,0,10,0"/>
-
-                    <!-- Divider -->
-                    <Rectangle Width="1" Height="24" Fill="#E2E8F0" VerticalAlignment="Center" Margin="0,0,10,0"/>
-
-                    <!-- Screen Controls (Minimize, Expandable, Close) -->
-                    <!-- 1. Screen Minimize -->
-                    <Button x:Name="MinimizeWindowButton" Click="MinimizeWindow_Click"
-                            ToolTip="Minimize Screen"
-                            Width="34" Height="34" Padding="0"
-                            Style="{StaticResource FlatButton}"
-                            Background="#F8FAFC" BorderBrush="#CBD5E1"
-                            Margin="0,0,5,0">
-                        <TextBlock Text="—" FontSize="12" FontWeight="Bold" Foreground="#475569"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Button>
-
-                    <!-- 2. Screen Expandable / Maximize / Restore -->
-                    <Button x:Name="MaximizeWindowButton" Click="MaximizeWindow_Click"
-                            ToolTip="Expand / Restore Screen"
-                            Width="34" Height="34" Padding="0"
-                            Style="{StaticResource FlatButton}"
-                            Background="#F8FAFC" BorderBrush="#CBD5E1"
-                            Margin="0,0,5,0">
-                        <TextBlock x:Name="MaximizeIconText" Text="🗖" FontSize="13" Foreground="#475569"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Button>
-
-                    <!-- 3. Screen Close -->
-                    <Button x:Name="CloseWindowButton" Click="CloseWindow_Click"
-                            ToolTip="Close POS Application"
-                            Width="34" Height="34" Padding="0"
-                            Style="{StaticResource FlatButton}"
-                            Background="#FEE2E2" BorderBrush="#FECACA"
-                            Margin="0,0,0,0">
-                        <TextBlock Text="✕" FontSize="13" FontWeight="Bold" Foreground="#DC2626"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Button>
                 </StackPanel>
-            </Grid>
+            </DockPanel>
         </Border>
 
         <!-- ==================== MAIN BODY ==================== -->
@@ -615,151 +551,209 @@
                         </Grid>
                     </Border>
 
-                    <!-- Cart items list -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
-                                  Padding="8,6">
-                        <ItemsControl x:Name="CartItems">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="#FAFAFA" BorderBrush="#EFEFEF"
-                                            BorderThickness="1" CornerRadius="10"
-                                            Padding="9,7" Margin="0,0,0,8">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="38"/>
-                                                <!-- thumb -->
-                                                <ColumnDefinition Width="*"/>
-                                                <!-- info -->
-                                                <ColumnDefinition Width="Auto"/>
-                                                <!-- stepper -->
-                                                <ColumnDefinition Width="70"/>
-                                                <!-- total+remove -->
-                                            </Grid.ColumnDefinitions>
+                    <!-- Cart items list & Empty Cart Illustration -->
+                    <Grid Grid.Row="1">
+                        <!-- Empty Cart Illustration (Visible when cart is empty) -->
+                        <StackPanel x:Name="EmptyCartIllustration"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Margin="20,30,20,30"
+                                    Visibility="Visible">
+                            <!-- Basket Icon with Badge & Motion Lines -->
+                            <Grid Width="160" Height="140" HorizontalAlignment="Center">
+                                <!-- Motion lines (dashed decorative curved arcs on left) -->
+                                <Path Data="M 18,28 C 12,32 10,42 16,50"
+                                      Stroke="#CBD5E1" StrokeThickness="2" StrokeDashArray="2,2"/>
+                                <Path Data="M 28,18 C 18,24 16,36 24,46"
+                                      Stroke="#CBD5E1" StrokeThickness="2" StrokeDashArray="2,2"/>
 
-                                            <!-- Thumbnail -->
-                                            <Border Grid.Column="0" Width="38" Height="38"
-                                                    CornerRadius="7" Background="#F3F4F6"
-                                                    ClipToBounds="True">
-                                                <Grid>
-                                                    <TextBlock Text="🛍" FontSize="18"
-                                                               HorizontalAlignment="Center"
-                                                               VerticalAlignment="Center"/>
-                                                    <Image Source="{Binding Product.ImageUrl}" Stretch="UniformToFill"
-                                                           RenderOptions.BitmapScalingMode="HighQuality"/>
-                                                </Grid>
-                                            </Border>
+                                <!-- Shopping Basket Body & Handles -->
+                                <Canvas Width="120" Height="100" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <!-- Basket Handles -->
+                                    <Path Data="M 38,45 C 38,20 62,20 62,45"
+                                          Stroke="#94A3B8" StrokeThickness="3.5" Fill="Transparent"/>
+                                    <Path Data="M 58,45 C 58,20 82,20 82,45"
+                                          Stroke="#94A3B8" StrokeThickness="3.5" Fill="Transparent"/>
+                                    <!-- Basket Top Rim -->
+                                    <Rectangle Canvas.Left="15" Canvas.Top="42" Width="90" Height="8"
+                                               RadiusX="4" RadiusY="4"
+                                               Fill="#F1F5F9" Stroke="#94A3B8" StrokeThickness="2"/>
+                                    <!-- Basket Lower Body -->
+                                    <Path Data="M 22,50 L 32,88 C 33,92 37,95 42,95 L 78,95 C 83,95 87,92 88,88 L 98,50 Z"
+                                          Fill="#F8FAFC" Stroke="#94A3B8" StrokeThickness="2"/>
+                                    <!-- Basket Vertical Slits -->
+                                    <Line X1="45" Y1="56" X2="48" Y2="86" Stroke="#CBD5E1" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line X1="60" Y1="56" X2="60" Y2="86" Stroke="#CBD5E1" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line X1="75" Y1="56" X2="72" Y2="86" Stroke="#CBD5E1" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                </Canvas>
 
-                                            <!-- Info -->
-                                            <StackPanel Grid.Column="1" Margin="8,0,4,0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Product.Name}"
-                                                           FontSize="12" FontWeight="Bold"
-                                                           Foreground="#1F2937"
-                                                           TextTrimming="CharacterEllipsis"
-                                                           MaxWidth="130"/>
-                                                <TextBlock FontSize="10" Foreground="#6B7280" Margin="0,2,0,0">
-                                                    <Run Text="SKU: "/>
-                                                    <Run Text="{Binding Product.Sku}"/>
-                                                    <Run Text=" • Price: "/>
-                                                    <Run Text="{Binding Product.Price, StringFormat=₹{0:N2}}"/>
-                                                </TextBlock>
-                                            </StackPanel>
+                                <!-- "0" Badge at Top-Right of Basket -->
+                                <Border HorizontalAlignment="Right" VerticalAlignment="Top"
+                                        Margin="0,16,22,0" Width="36" Height="24"
+                                        Background="#F1F5F9" BorderBrush="#94A3B8" BorderThickness="1.5"
+                                        CornerRadius="6">
+                                    <TextBlock Text="0" FontSize="13" FontWeight="Bold" Foreground="#64748B"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
 
-                                            <!-- Stepper -->
-                                            <Border Grid.Column="2" Background="White"
-                                                    CornerRadius="10" Padding="7,5" Margin="0,0,6,0">
-                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                    <Button Content="−" Tag="{Binding}"
-                                                            Width="25" Height="25" Padding="0"
-                                                            Click="DecreaseQuantity_Click"
-                                                            Background="#F3F4F6" BorderBrush="#EEF0F2"
-                                                            BorderThickness="1"
-                                                            Style="{StaticResource FlatButton}"
-                                                            FontSize="11"/>
-                                                    <TextBlock Text="{Binding Quantity}"
-                                                               Width="20" FontSize="12"
-                                                               TextAlignment="Center"
-                                                               VerticalAlignment="Center" Foreground="#111827"/>
-                                                    <Button Content="+" Tag="{Binding}"
-                                                            Width="25" Height="25" Padding="0"
-                                                            Click="IncreaseQuantity_Click"
-                                                            Background="#F3F4F6" BorderBrush="#EEF0F2"
-                                                            BorderThickness="1"
-                                                            Style="{StaticResource FlatButton}"
-                                                            FontSize="11"/>
+                                <!-- Subtle shadow under basket -->
+                                <Ellipse Width="110" Height="14" Fill="#E2E8F0"
+                                         HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                         Margin="0,0,0,10" Opacity="0.6"/>
+                            </Grid>
+
+                            <TextBlock Text="Current Sales Empty"
+                                       FontSize="16" FontWeight="Bold" Foreground="#1E293B"
+                                       HorizontalAlignment="Center" Margin="0,16,0,6"/>
+                            <TextBlock Text="Scan a product, search or browse from the&#x0a;right side to start a new sale."
+                                       FontSize="12" Foreground="#64748B" TextAlignment="Center"
+                                       LineHeight="18" HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Cart items list (visible when cart has items) -->
+                        <ScrollViewer x:Name="CartItemsScrollViewer" VerticalScrollBarVisibility="Auto"
+                                      Padding="8,6" Visibility="Collapsed">
+                            <ItemsControl x:Name="CartItems">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#FAFAFA" BorderBrush="#EFEFEF"
+                                                BorderThickness="1" CornerRadius="10"
+                                                Padding="9,7" Margin="0,0,0,8">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="38"/>
+                                                    <!-- thumb -->
+                                                    <ColumnDefinition Width="*"/>
+                                                    <!-- info -->
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <!-- stepper -->
+                                                    <ColumnDefinition Width="70"/>
+                                                    <!-- total+remove -->
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Thumbnail -->
+                                                <Border Grid.Column="0" Width="38" Height="38"
+                                                        CornerRadius="7" Background="#F3F4F6"
+                                                        ClipToBounds="True">
+                                                    <Grid>
+                                                        <TextBlock Text="🛍" FontSize="18"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                                        <Image Source="{Binding Product.ImageUrl}" Stretch="UniformToFill"
+                                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                    </Grid>
+                                                </Border>
+
+                                                <!-- Info -->
+                                                <StackPanel Grid.Column="1" Margin="8,0,4,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Product.Name}"
+                                                               FontSize="12" FontWeight="Bold"
+                                                               Foreground="#1F2937"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               MaxWidth="130"/>
+                                                    <TextBlock FontSize="10" Foreground="#6B7280" Margin="0,2,0,0">
+                                                        <Run Text="SKU: "/>
+                                                        <Run Text="{Binding Product.Sku}"/>
+                                                        <Run Text=" • Price: "/>
+                                                        <Run Text="{Binding Product.Price, StringFormat=₹{0:N2}}"/>
+                                                    </TextBlock>
                                                 </StackPanel>
-                                            </Border>
 
-                                            <!-- Remove + total -->
-                                            <StackPanel Grid.Column="3" VerticalAlignment="Stretch">
-                                                <Button Content="🗑" Tag="{Binding}"
-                                                        Width="23" Height="23" Padding="0"
-                                                        Click="RemoveItem_Click"
-                                                        Background="#FDEEEE" BorderThickness="0"
-                                                        Style="{StaticResource FlatButton}"
-                                                        FontSize="10" Foreground="#E5484D"
-                                                        HorizontalAlignment="Right"/>
-                                                <TextBlock Text="{Binding LineTotal, StringFormat=₹{0:N2}}"
-                                                           FontSize="12" FontWeight="Bold"
-                                                           Foreground="#111827"
-                                                           HorizontalAlignment="Right"
-                                                           VerticalAlignment="Bottom"
-                                                           Margin="0,6,0,0"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                                                <!-- Stepper -->
+                                                <Border Grid.Column="2" Background="White"
+                                                        CornerRadius="10" Padding="7,5" Margin="0,0,6,0">
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <Button Content="−" Tag="{Binding}"
+                                                                Width="25" Height="25" Padding="0"
+                                                                Click="DecreaseQuantity_Click"
+                                                                Background="#F3F4F6" BorderBrush="#EEF0F2"
+                                                                BorderThickness="1"
+                                                                Style="{StaticResource FlatButton}"
+                                                                FontSize="11"/>
+                                                        <TextBlock Text="{Binding Quantity}"
+                                                                   Width="20" FontSize="12"
+                                                                   TextAlignment="Center"
+                                                                   VerticalAlignment="Center" Foreground="#111827"/>
+                                                        <Button Content="+" Tag="{Binding}"
+                                                                Width="25" Height="25" Padding="0"
+                                                                Click="IncreaseQuantity_Click"
+                                                                Background="#F3F4F6" BorderBrush="#EEF0F2"
+                                                                BorderThickness="1"
+                                                                Style="{StaticResource FlatButton}"
+                                                                FontSize="11"/>
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- Remove + total -->
+                                                <StackPanel Grid.Column="3" VerticalAlignment="Stretch">
+                                                    <Button Content="🗑" Tag="{Binding}"
+                                                            Width="23" Height="23" Padding="0"
+                                                            Click="RemoveItem_Click"
+                                                            Background="#FDEEEE" BorderThickness="0"
+                                                            Style="{StaticResource FlatButton}"
+                                                            FontSize="10" Foreground="#E5484D"
+                                                            HorizontalAlignment="Right"/>
+                                                    <TextBlock Text="{Binding LineTotal, StringFormat=₹{0:N2}}"
+                                                               FontSize="12" FontWeight="Bold"
+                                                               Foreground="#111827"
+                                                               HorizontalAlignment="Right"
+                                                               VerticalAlignment="Bottom"
+                                                               Margin="0,6,0,0"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
 
                     <!-- Cart action buttons -->
                     <StackPanel Grid.Row="2" Orientation="Horizontal"
-                                Margin="8,4,8,4" Height="31">
+                                Margin="8,4,8,4" Height="32">
                         <Button Style="{StaticResource CartActionBtn}" Click="HoldOrders_Click"
-                                HorizontalContentAlignment="Center" Margin="0,0,5,0">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Hold " FontSize="10"/>
+                                Margin="0,0,5,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Hold " FontSize="10.5" Foreground="#374151"/>
                                 <Border Background="#F3F4F6" BorderBrush="#E5E7EB" BorderThickness="1"
-                                        CornerRadius="4" Padding="4,0">
+                                        CornerRadius="3" Padding="4,1" Margin="2,0,0,0">
                                     <TextBlock Text="F4" FontSize="8.5" FontWeight="Bold" Foreground="#6B7280"/>
                                 </Border>
                             </StackPanel>
                         </Button>
                         <Button Style="{StaticResource CartActionBtn}" Click="OpenAddProduct_Click"
                                 Margin="0,0,5,0">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Add Product " FontSize="10"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Add Product " FontSize="10.5" Foreground="#374151"/>
                                 <Border Background="#F3F4F6" BorderBrush="#E5E7EB" BorderThickness="1"
-                                        CornerRadius="4" Padding="4,0">
+                                        CornerRadius="3" Padding="4,1" Margin="2,0,0,0">
                                     <TextBlock Text="F2" FontSize="8.5" FontWeight="Bold" Foreground="#6B7280"/>
                                 </Border>
                             </StackPanel>
                         </Button>
                         <Button Style="{StaticResource CartActionBtn}" Margin="0,0,5,0" Click="OpenCoupon_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Coupon " FontSize="10"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Coupon " FontSize="10.5" Foreground="#374151"/>
                                 <Border Background="#F3F4F6" BorderBrush="#E5E7EB" BorderThickness="1"
-                                        CornerRadius="4" Padding="4,0">
+                                        CornerRadius="3" Padding="4,1" Margin="2,0,0,0">
                                     <TextBlock Text="Alt+D" FontSize="8.5" FontWeight="Bold" Foreground="#6B7280"/>
                                 </Border>
                             </StackPanel>
                         </Button>
                         <Button Style="{StaticResource CartActionBtn}" Margin="0,0,5,0" Click="OpenExtraDiscount_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Discount " FontSize="10"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Discount " FontSize="10.5" Foreground="#374151"/>
                                 <Border Background="#F3F4F6" BorderBrush="#E5E7EB" BorderThickness="1"
-                                        CornerRadius="4" Padding="4,0">
+                                        CornerRadius="3" Padding="4,1" Margin="2,0,0,0">
                                     <TextBlock Text="Alt+E" FontSize="8.5" FontWeight="Bold" Foreground="#6B7280"/>
                                 </Border>
                             </StackPanel>
                         </Button>
                         <!-- Trash -->
-                        <Button Width="31" Height="31" Padding="0"
+                        <Button Width="32" Height="32" Padding="0"
                                 Click="ClearCart_Click"
-                                Background="#FDEEEE" BorderBrush="#FBCFCF" BorderThickness="1"
-                                Style="{StaticResource FlatButton}"
-                                FontSize="12" Foreground="#E5484D">
-                            <TextBlock Text="🗑" FontSize="12"/>
+                                Background="#FEE2E2" BorderBrush="#FECACA" BorderThickness="1"
+                                Style="{StaticResource FlatButton}">
+                            <TextBlock Text="🗑" FontSize="12" Foreground="#EF4444"/>
                         </Button>
                     </StackPanel>
 
@@ -771,96 +765,110 @@
                             <!-- Status row -->
                             <DockPanel Margin="0,0,0,6">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Ellipse Width="7" Height="7" Fill="#22C55E" Margin="0,0,5,0"/>
+                                    <Ellipse Width="7" Height="7" Fill="#22C55E" Margin="0,0,6,0"/>
                                     <TextBlock Text="Barcode Scanner Active"
                                                FontSize="11" FontWeight="SemiBold" Foreground="#16A34A"/>
                                 </StackPanel>
                                 <TextBlock x:Name="LastScannedText" DockPanel.Dock="Right"
-                                           FontSize="11" Foreground="#6B7280"
+                                           FontSize="11" Foreground="#EF4444"
                                            HorizontalAlignment="Right"
                                            Text="Last Scanned: —"/>
                             </DockPanel>
                             <!-- Input row -->
                             <Border Background="White" BorderBrush="#ECE5D3"
-                                    BorderThickness="1" CornerRadius="8"
-                                    Padding="5">
-                                <DockPanel>
+                                    BorderThickness="1" CornerRadius="6"
+                                    Padding="4">
+                                <DockPanel LastChildFill="True">
                                     <!-- Barcode icon box -->
-                                    <Border Width="32" Height="32" CornerRadius="8"
-                                            Background="White" BorderBrush="#E7E2D5" BorderThickness="1"
+                                    <Border Width="28" Height="28" CornerRadius="5"
+                                            Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
                                             Margin="0,0,6,0">
-                                        <TextBlock Text="▊▊▊" FontSize="10" Foreground="#1F2937"
+                                        <TextBlock Text="▊▋▌▍" FontSize="9" Foreground="#334155"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <!-- F1 badge -->
-                                    <Border Background="#E9F0FE" BorderBrush="#D4E2FD"
-                                            BorderThickness="1,1,1,2" CornerRadius="5"
-                                            Padding="6,2" Margin="0,0,6,0" VerticalAlignment="Center">
+                                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE"
+                                            BorderThickness="1" CornerRadius="4"
+                                            Padding="6,1" Margin="0,0,6,0" VerticalAlignment="Center">
                                         <TextBlock Text="F1" FontSize="9.5" FontWeight="Bold" Foreground="#2563EB"/>
                                     </Border>
                                     <!-- Enter button -->
                                     <Button Content="Enter" DockPanel.Dock="Right"
                                             Click="ScanButton_Click"
-                                            Padding="12,6" Background="#F3F4F6"
-                                            BorderBrush="#E5E7EB" BorderThickness="1"
+                                            Padding="14,4" Background="#F1F5F9"
+                                            BorderBrush="#CBD5E1" BorderThickness="1"
                                             Style="{StaticResource FlatButton}"
-                                            FontSize="11" FontWeight="SemiBold" Foreground="#374151"/>
-                                    <!-- Scan input -->
-                                    <TextBox x:Name="ScanBox" BorderThickness="0"
-                                             Background="Transparent"
-                                             FontSize="12.5" Foreground="#1F2937"
-                                             VerticalContentAlignment="Center"
-                                             ToolTip="Scan or enter a barcode / SKU"
-                                             KeyDown="ScanBox_KeyDown"
-                                             Padding="3,0"/>
+                                            FontSize="11" FontWeight="SemiBold" Foreground="#334155"/>
+                                    <!-- Scan input with watermark -->
+                                    <Grid VerticalAlignment="Center">
+                                        <TextBox x:Name="ScanBox" BorderThickness="0"
+                                                 Background="Transparent"
+                                                 FontSize="11.5" Foreground="#1F2937"
+                                                 VerticalContentAlignment="Center"
+                                                 ToolTip="Scan or enter a barcode / SKU"
+                                                 KeyDown="ScanBox_KeyDown"
+                                                 Padding="2,0"/>
+                                        <TextBlock Text="Scan EAN Barcode... (e.g. 5*EAN for qty 5)"
+                                                   FontSize="11" Foreground="#9CA3AF"
+                                                   VerticalAlignment="Center" Margin="2,0,0,0"
+                                                   IsHitTestVisible="False">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Text, ElementName=ScanBox}" Value="">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
                                 </DockPanel>
                             </Border>
                         </StackPanel>
                     </Border>
 
                     <!-- Totals section -->
-                    <Border Grid.Row="4" Background="#FAFAFA" BorderBrush="#E9E9E9"
+                    <Border Grid.Row="4" Background="White" BorderBrush="#F1F5F9"
                             BorderThickness="1" CornerRadius="8"
-                            Padding="9,7" Margin="8,0,8,8">
+                            Padding="10,8" Margin="8,0,8,8">
                         <StackPanel>
                             <!-- Product Price -->
-                            <DockPanel Margin="0,0,0,4">
+                            <DockPanel Margin="0,0,0,5">
                                 <TextBlock Text="Product Price" FontSize="12.5" Foreground="#1F2937"/>
                                 <TextBlock x:Name="SubtotalText" Text="₹0.00"
                                            DockPanel.Dock="Right" FontSize="12.5" FontWeight="SemiBold"
                                            Foreground="#111827"/>
                             </DockPanel>
                             <!-- Product Discount -->
-                            <DockPanel Margin="0,0,0,4">
+                            <DockPanel Margin="0,0,0,5">
                                 <TextBlock Text="Product Discount" FontSize="12.5" Foreground="#16A34A"/>
-                                <TextBlock x:Name="DiscountText" Text="₹0.00"
+                                <TextBlock x:Name="DiscountText" Text="- ₹0.00"
                                            DockPanel.Dock="Right" FontSize="12.5" FontWeight="SemiBold"
                                            Foreground="#16A34A"/>
                             </DockPanel>
                             <!-- Sub Total -->
-                            <DockPanel Margin="0,0,0,4">
+                            <DockPanel Margin="0,0,0,5">
                                 <TextBlock Text="Sub Total" FontSize="12.5" FontWeight="Bold" Foreground="#1F2937"/>
                                 <TextBlock x:Name="TotalText" Text="₹0.00"
                                            DockPanel.Dock="Right" FontSize="12.5" FontWeight="Bold"
                                            Foreground="#111827"/>
                             </DockPanel>
-                            <!-- GST Slab Selector -->
-                            <DockPanel Margin="0,0,0,4">
-                                <TextBlock Text="Tax Rate (GST)" FontSize="11" Foreground="#6B7280" VerticalAlignment="Center"/>
-                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                                    <RadioButton x:Name="Gst0Radio" Content="0%" Style="{StaticResource GstSlabRadio}" Click="GstSlab_Click" Tag="0"/>
-                                    <RadioButton x:Name="Gst5Radio" Content="5%" Style="{StaticResource GstSlabRadio}" Click="GstSlab_Click" Tag="5" IsChecked="True"/>
-                                    <RadioButton x:Name="Gst12Radio" Content="12%" Style="{StaticResource GstSlabRadio}" Click="GstSlab_Click" Tag="12"/>
-                                    <RadioButton x:Name="Gst18Radio" Content="18%" Style="{StaticResource GstSlabRadio}" Click="GstSlab_Click" Tag="18"/>
-                                </StackPanel>
-                            </DockPanel>
                             <!-- GST -->
                             <DockPanel>
-                                <TextBlock Text="GST (CGST + SGST)" FontSize="12" Foreground="#6B7280"/>
+                                <TextBlock Text="GST" FontSize="12" Foreground="#1F2937"/>
                                 <TextBlock x:Name="GstText" Text="₹0.00"
                                            DockPanel.Dock="Right" FontSize="12" FontWeight="SemiBold"
                                            Foreground="#111827"/>
                             </DockPanel>
+                            <!-- Hidden GST slab radios for code-behind compatibility -->
+                            <StackPanel Visibility="Collapsed">
+                                <RadioButton x:Name="Gst0Radio" Content="0%" Click="GstSlab_Click" Tag="0"/>
+                                <RadioButton x:Name="Gst5Radio" Content="5%" Click="GstSlab_Click" Tag="5" IsChecked="True"/>
+                                <RadioButton x:Name="Gst12Radio" Content="12%" Click="GstSlab_Click" Tag="12"/>
+                                <RadioButton x:Name="Gst18Radio" Content="18%" Click="GstSlab_Click" Tag="18"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
@@ -872,20 +880,20 @@
                         <Grid HorizontalAlignment="Stretch">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left"
                                         VerticalAlignment="Center">
-                                <TextBlock Text="Pay/Tender" FontSize="14" FontWeight="Bold"
+                                <TextBlock Text="Pay/Tender" FontSize="14.5" FontWeight="Bold"
                                            Foreground="White" VerticalAlignment="Center"/>
-                                <Border Background="#2EFFFFFF"
-                                        BorderBrush="#59FFFFFF" BorderThickness="1"
-                                        CornerRadius="5" Padding="6,1" Margin="8,0,0,0">
-                                    <TextBlock Text="F12" FontSize="9.5" FontWeight="Bold" Foreground="White"/>
+                                <Border Background="#20FFFFFF"
+                                        BorderBrush="#60FFFFFF" BorderThickness="1"
+                                        CornerRadius="4" Padding="6,1" Margin="8,0,0,0">
+                                    <TextBlock Text="F12" FontSize="10" FontWeight="Bold" Foreground="White"/>
                                 </Border>
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding ElementName=TotalText, Path=Text}"
-                                           FontSize="15" FontWeight="Bold"
+                                           FontSize="16" FontWeight="Bold"
                                            Foreground="White" HorizontalAlignment="Right"/>
                                 <TextBlock Text="Total Payable Amount"
-                                           FontSize="9.5" Foreground="#CCCCCC"
+                                           FontSize="9.5" Foreground="#D1FAE5"
                                            HorizontalAlignment="Right"/>
                             </StackPanel>
                         </Grid>
@@ -898,7 +906,7 @@
                 <!-- POS panel -->
                 <Grid x:Name="PosPanel">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="48"/>
+                        <RowDefinition Height="46"/>
                         <!-- Search toolbar -->
                         <RowDefinition Height="Auto"/>
                         <!-- Category chips -->
@@ -910,7 +918,7 @@
 
                     <!-- Search toolbar -->
                     <Border Grid.Row="0" Background="White" BorderBrush="#E7E6E8"
-                            BorderThickness="1" CornerRadius="8" Padding="12,0">
+                            BorderThickness="1" CornerRadius="8" Padding="12,0" Height="46">
                         <DockPanel LastChildFill="True">
                             <!-- Right action buttons -->
                             <Button DockPanel.Dock="Right" Content="⊞ Search Scan"
@@ -929,20 +937,20 @@
                                     FontSize="11.5" Foreground="#374151"/>
 
                             <!-- Left search icon -->
-                            <TextBlock DockPanel.Dock="Left" Text="⌕" FontSize="20" Foreground="#777B83"
+                            <TextBlock DockPanel.Dock="Left" Text="🔍" FontSize="14" Foreground="#9CA3AF"
                                        VerticalAlignment="Center" Margin="0,0,8,0"/>
 
                             <!-- Search Input (fills all remaining width) -->
                             <Grid VerticalAlignment="Center">
                                 <TextBox x:Name="SearchBox" BorderThickness="0" Background="Transparent"
-                                         FontSize="12.5" Foreground="#1F2937" VerticalContentAlignment="Center"
+                                         FontSize="12" Foreground="#1F2937" VerticalContentAlignment="Center"
                                          ToolTip="Search by product name, SKU, or barcode"
                                          TextChanged="SearchBox_TextChanged"
                                          KeyDown="SearchBox_KeyDown"
                                          Padding="0,4"/>
                                 <TextBlock x:Name="SearchPlaceholderText"
                                            Text="Search Product Name / Brand / Categories / SKU / Barcode... [Press Enter]"
-                                           FontSize="12" Foreground="#9CA3AF"
+                                           FontSize="11.5" Foreground="#9CA3AF"
                                            VerticalAlignment="Center" Margin="2,0,0,0"
                                            IsHitTestVisible="False">
                                     <TextBlock.Style>
@@ -960,14 +968,33 @@
                         </DockPanel>
                     </Border>
 
-                    <!-- Category chips -->
-                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto"
-                                  VerticalScrollBarVisibility="Disabled"
-                                  PreviewMouseWheel="CategoryScrollViewer_PreviewMouseWheel"
-                                  Padding="0,6,0,6">
-                        <StackPanel x:Name="CategoryButtons" Orientation="Horizontal"
-                                    VerticalAlignment="Center"/>
-                    </ScrollViewer>
+                    <!-- Category chips with scroll buttons -->
+                    <Grid Grid.Row="1" Margin="0,8,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ScrollViewer x:Name="CategoryChipsScrollViewer" Grid.Column="0"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Disabled"
+                                      PreviewMouseWheel="CategoryScrollViewer_PreviewMouseWheel">
+                            <StackPanel x:Name="CategoryButtons" Orientation="Horizontal"
+                                        VerticalAlignment="Center"/>
+                        </ScrollViewer>
+
+                        <!-- Nav arrows on right -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
+                            <Button Content="‹" Click="CategoryScrollLeft_Click"
+                                    Width="28" Height="28" Padding="0" Margin="0,0,4,0"
+                                    Style="{StaticResource FlatButton}"
+                                    FontSize="16" Foreground="#6B7280"/>
+                            <Button Content="›" Click="CategoryScrollRight_Click"
+                                    Width="28" Height="28" Padding="0"
+                                    Style="{StaticResource FlatButton}"
+                                    FontSize="16" Foreground="#6B7280"/>
+                        </StackPanel>
+                    </Grid>
 
                     <!-- Product grid -->
                     <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto"

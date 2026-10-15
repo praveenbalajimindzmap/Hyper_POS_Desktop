@@ -166,7 +166,7 @@ public sealed class PosDatabase
         command.ExecuteNonQuery();
     }
 
-    public void UpdateProductPricing(string sku, decimal originalPrice, decimal discount, string discountType, decimal sellingPrice, string? imageUrl = null)
+    public void UpdateProductPricing(string sku, decimal originalPrice, decimal discount, string discountType, decimal sellingPrice, string? imageUrl = null, int? stock = null)
     {
         using var connection = OpenConnection();
         using var command = connection.CreateCommand();
@@ -176,7 +176,8 @@ public sealed class PosDatabase
                 discount = @discount, 
                 discount_type = @discountType, 
                 price = @sellingPrice,
-                image_url = COALESCE(@imageUrl, image_url)
+                image_url = COALESCE(@imageUrl, image_url),
+                stock = COALESCE(@stock, stock)
             WHERE sku = @sku;
             """;
         command.Parameters.AddWithValue("@sku", sku);
@@ -185,6 +186,7 @@ public sealed class PosDatabase
         command.Parameters.AddWithValue("@discountType", discountType);
         command.Parameters.AddWithValue("@sellingPrice", sellingPrice);
         command.Parameters.AddWithValue("@imageUrl", string.IsNullOrWhiteSpace(imageUrl) ? DBNull.Value : imageUrl);
+        command.Parameters.AddWithValue("@stock", stock.HasValue ? stock.Value : DBNull.Value);
         command.ExecuteNonQuery();
     }
 

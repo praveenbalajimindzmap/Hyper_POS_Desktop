@@ -73,7 +73,7 @@ public partial class MainWindow : Window
                 CashierRoleLabel.Text = "Cashier: ";
             }
         }
-        CurrentDateText.Text = DateTime.Now.ToString("dd MMM, yyyy · hh:mm tt");
+        CurrentDateText.Text = "🕒 " + DateTime.Now.ToString("dd MMM, yyyy - hh:mm tt");
         SyncStatusText.Text = syncConfigurationStore.IsConfigured
             ? "Offline · cache available"
             : "Offline · local catalog";
@@ -380,6 +380,18 @@ public partial class MainWindow : Window
         }
     }
 
+    private void CategoryScrollLeft_Click(object sender, RoutedEventArgs e)
+    {
+        CategoryChipsScrollViewer?.LineLeft();
+        CategoryChipsScrollViewer?.LineLeft();
+    }
+
+    private void CategoryScrollRight_Click(object sender, RoutedEventArgs e)
+    {
+        CategoryChipsScrollViewer?.LineRight();
+        CategoryChipsScrollViewer?.LineRight();
+    }
+
     private void Category_Click(object sender, RoutedEventArgs e)
     {
         selectedCategory = (string)((Button)sender).Tag;
@@ -498,14 +510,21 @@ public partial class MainWindow : Window
         var sgst = gstAmount - cgst;
         currentPayableTotal = taxableAmount + gstAmount;
 
+        if (EmptyCartIllustration != null)
+        {
+            EmptyCartIllustration.Visibility = cart.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        if (CartItemsScrollViewer != null)
+        {
+            CartItemsScrollViewer.Visibility = cart.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         var culture = new System.Globalization.CultureInfo("en-IN");
         CartCountText.Text = $"{cart.Count} Items ({count} Units)";
         SubtotalText.Text = grossTotal.ToString("C2", culture);
         DiscountText.Text = totalDiscount > 0 ? $"- {totalDiscount.ToString("C2", culture)}" : "- ₹0.00";
         TotalText.Text = currentPayableTotal.ToString("C2", culture);
-        GstText.Text = currentGstRate > 0
-            ? $"₹{gstAmount:N2} ({currentGstRate:0}%: CGST ₹{cgst:N2} + SGST ₹{sgst:N2})"
-            : "₹0.00 (0% Exempt)";
+        GstText.Text = $"₹{gstAmount:N2}";
         CheckoutButton.IsEnabled = cart.Count > 0;
         CheckoutButton.Opacity = cart.Count > 0 ? 1 : 0.55;
 

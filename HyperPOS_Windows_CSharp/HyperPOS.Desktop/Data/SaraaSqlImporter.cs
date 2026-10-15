@@ -106,20 +106,20 @@ public static class SaraaSqlImporter
             }
         }
 
-        // 3. Seed real products from Saraa Boutique dump with CDN image URLs, discounts, and selling price
+        // 3. Seed real products from Saraa Boutique dump with exact image URLs, stock, prices, and 10% discount
         var items = new[]
         {
-            (Name: "linen cotton checked with digital flowers", Category: "Sarees", Sku: "SB0001", OriginalPrice: 899.00m, Discount: 100.00m, DiscountType: "flat", SellingPrice: 799.00m, Stock: 10, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c1e14e15c.webp"),
-            (Name: "linen cotton checked with digital flowers", Category: "Sarees", Sku: "SB0002", OriginalPrice: 899.00m, Discount: 100.00m, DiscountType: "flat", SellingPrice: 799.00m, Stock: 4, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c3663e24e.webp"),
-            (Name: "linen cotton emerald green", Category: "Sarees", Sku: "SB0003", OriginalPrice: 899.00m, Discount: 100.00m, DiscountType: "flat", SellingPrice: 799.00m, Stock: 7, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c44c43dcf.webp"),
-            (Name: "linen cotton checked with digital flowers", Category: "Sarees", Sku: "SB0004", OriginalPrice: 899.00m, Discount: 100.00m, DiscountType: "flat", SellingPrice: 799.00m, Stock: 5, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c525b852e.webp"),
-            (Name: "linen cotton with garrife print", Category: "Sarees", Sku: "SB0005", OriginalPrice: 899.00m, Discount: 100.00m, DiscountType: "flat", SellingPrice: 799.00m, Stock: 4, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c6443b4c2.webp"),
-            (Name: "Mal Cotton Saree", Category: "Sarees", Sku: "SB0006", OriginalPrice: 1050.00m, Discount: 100.00m, DiscountType: "flat", SellingPrice: 950.00m, Stock: 6, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c77a1127a.webp"),
-            (Name: "Mul Cotton With Checked Saree", Category: "Sarees", Sku: "SB0007", OriginalPrice: 1500.00m, Discount: 100.00m, DiscountType: "flat", SellingPrice: 1400.00m, Stock: 100, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c86765c06.webp"),
-            (Name: "Mul Cotton With Tissue Saree", Category: "Sarees", Sku: "SB0008", OriginalPrice: 1550.00m, Discount: 100.00m, DiscountType: "flat", SellingPrice: 1450.00m, Stock: 98, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c85de6a46.webp"),
-            (Name: "Nayanthara Saree", Category: "Celebrity Collections", Sku: "SB0009", OriginalPrice: 899.00m, Discount: 100.00m, DiscountType: "flat", SellingPrice: 799.00m, Stock: 4, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c60a9072b.webp"),
-            (Name: "Chinon Mirror Work Saree", Category: "Sarees", Sku: "SB0010", OriginalPrice: 999.00m, Discount: 100.00m, DiscountType: "flat", SellingPrice: 899.00m, Stock: 8, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c4964d797.webp"),
-            (Name: "Mul Kolam Saree", Category: "Sarees", Sku: "SB0011", OriginalPrice: 1500.00m, Discount: 100.00m, DiscountType: "flat", SellingPrice: 1400.00m, Stock: 5, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c2d0e6941.webp"),
+            (Name: "Mul Cotton With Checked Saree", Category: "Sarees", Sku: "SB0007", OriginalPrice: 1500.00m, Discount: 10.00m, DiscountType: "percent", SellingPrice: 1350.00m, Stock: 97, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c86765c06.webp"),
+            (Name: "Mul Cotton With Tissue Saree", Category: "Sarees", Sku: "SB0008", OriginalPrice: 1550.00m, Discount: 10.00m, DiscountType: "percent", SellingPrice: 1395.00m, Stock: 89, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c85de6a46.webp"),
+            (Name: "Mal Cotton Saree", Category: "Sarees", Sku: "SB0006", OriginalPrice: 1050.00m, Discount: 10.00m, DiscountType: "percent", SellingPrice: 945.00m, Stock: 6, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c77a1127a.webp"),
+            (Name: "linen cotton with garrife print", Category: "Sarees", Sku: "SB0005", OriginalPrice: 899.00m, Discount: 10.00m, DiscountType: "percent", SellingPrice: 809.10m, Stock: 4, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c6443b4c2.webp"),
+            (Name: "Nayanthara Saree", Category: "Celebrity Collections", Sku: "SB0009", OriginalPrice: 899.00m, Discount: 10.00m, DiscountType: "percent", SellingPrice: 809.10m, Stock: 4, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c60a9072b.webp"),
+            (Name: "linen cotton checked with digital flowers", Category: "Sarees", Sku: "SB0004", OriginalPrice: 899.00m, Discount: 10.00m, DiscountType: "percent", SellingPrice: 809.10m, Stock: 5, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c525b852e.webp"),
+            (Name: "Chinon Mirror Work Saree", Category: "Sarees", Sku: "SB0010", OriginalPrice: 999.00m, Discount: 10.00m, DiscountType: "percent", SellingPrice: 899.00m, Stock: 8, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c4964d797.webp"),
+            (Name: "linen cotton emerald green", Category: "Sarees", Sku: "SB0003", OriginalPrice: 899.00m, Discount: 10.00m, DiscountType: "percent", SellingPrice: 809.10m, Stock: 7, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c44c43dcf.webp"),
+            (Name: "linen cotton checked with digital flowers", Category: "Sarees", Sku: "SB0002", OriginalPrice: 899.00m, Discount: 10.00m, DiscountType: "percent", SellingPrice: 809.10m, Stock: 4, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c3663e24e.webp"),
+            (Name: "Mul Kolam Saree", Category: "Sarees", Sku: "SB0011", OriginalPrice: 1500.00m, Discount: 10.00m, DiscountType: "percent", SellingPrice: 1350.00m, Stock: 4, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c2d0e6941.webp"),
+            (Name: "linen cotton checked with digital flowers", Category: "Sarees", Sku: "SB0001", OriginalPrice: 899.00m, Discount: 10.00m, DiscountType: "percent", SellingPrice: 809.10m, Stock: 10, ImageUrl: "https://saraaboutique.com/storage/product/thumbnail/2026-10-10-6ac9c1e14e15c.webp"),
         };
 
         foreach (var item in items)
@@ -132,7 +132,7 @@ public static class SaraaSqlImporter
             {
                 // Already added
             }
-            db.UpdateProductPricing(item.Sku, item.OriginalPrice, item.Discount, item.DiscountType, item.SellingPrice, item.ImageUrl);
+            db.UpdateProductPricing(item.Sku, item.OriginalPrice, item.Discount, item.DiscountType, item.SellingPrice, item.ImageUrl, item.Stock);
         }
     }
 }
