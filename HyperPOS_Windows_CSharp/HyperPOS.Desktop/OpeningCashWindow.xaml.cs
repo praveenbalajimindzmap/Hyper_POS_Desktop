@@ -16,12 +16,11 @@ public partial class OpeningCashWindow : Window
     public OpeningCashWindow(PosShift savedShift)
     {
         InitializeComponent();
-        SubtitleText.Text = "Opening cash has been recorded for this shift and cannot be changed.";
+        SubtitleText.Text = "Enter the starting cash amount for this shift";
         InputPanel.Visibility = Visibility.Collapsed;
         SavedPanel.Visibility = Visibility.Visible;
         SavedAmountText.Text = savedShift.OpeningCash.ToString("C2", CultureInfo.GetCultureInfo("en-IN"));
-        SavedBusinessDateText.Text = savedShift.BusinessDate.ToString("dd MMM yyyy");
-        SavedOpenedAtText.Text = savedShift.OpenedAt.ToString("dd MMM yyyy · hh:mm tt");
+        SavedBusinessDateText.Text = $"Current Business Date - {savedShift.BusinessDate:dd MMM yyyy} (Opening Cash Entered)";
         ValidationText.Visibility = Visibility.Collapsed;
         SaveButton.Visibility = Visibility.Collapsed;
         CloseButton.Visibility = Visibility.Visible;

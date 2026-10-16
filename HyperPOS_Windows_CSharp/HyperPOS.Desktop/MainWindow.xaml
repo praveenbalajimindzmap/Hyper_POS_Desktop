@@ -563,7 +563,7 @@
                         <StackPanel HorizontalAlignment="Right">
                             <TextBlock Text="Opening Cash" FontSize="10" Foreground="#9AA1AB"
                                        HorizontalAlignment="Right"/>
-                            <TextBlock x:Name="OpeningCashAmountText" Text="S$ 100.00" FontSize="14.5" FontWeight="Bold"
+                            <TextBlock x:Name="OpeningCashAmountText" Text="₹ 100.00" FontSize="14.5" FontWeight="Bold"
                                        Foreground="#111827" HorizontalAlignment="Right"/>
                         </StackPanel>
                     </Button>
@@ -576,18 +576,13 @@
                         <TextBlock Text="⋮" FontSize="16" FontWeight="Bold" Foreground="#6B7280"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         <Button.ContextMenu>
-                            <ContextMenu x:Name="SettlementContextMenu" Background="White" BorderBrush="#E2E8F0" BorderThickness="1">
-                                <MenuItem Click="ShiftSettlement_Click">
+                            <ContextMenu x:Name="SettlementContextMenu" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                                         Padding="4" HasDropShadow="True">
+                                <MenuItem Click="DayEnd_Click" Padding="12,8" Background="Transparent" Cursor="Hand">
                                     <MenuItem.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="⏱  Shift Settlement" FontSize="12.5" FontWeight="SemiBold" Foreground="#1F2937"/>
-                                        </StackPanel>
-                                    </MenuItem.Header>
-                                </MenuItem>
-                                <MenuItem Click="DayEnd_Click">
-                                    <MenuItem.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="📅  Day End Settlement" FontSize="12.5" FontWeight="SemiBold" Foreground="#1F2937"/>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="📅" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Day End Settlement" FontSize="12.5" FontWeight="SemiBold" Foreground="#111827" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </MenuItem.Header>
                                 </MenuItem>
@@ -3219,6 +3214,218 @@
                         </Border>
                     </Grid>
                 </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== OPENING CASH MODAL POPUP ==================== -->
+        <Grid x:Name="OpeningCashModal" Grid.Row="0" Grid.RowSpan="2"
+              Visibility="Collapsed" Background="#66000000" Panel.ZIndex="150"
+              MouseDown="ModalBackdrop_MouseDown">
+            <Border Background="White" CornerRadius="12" Width="580"
+                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Padding="26,24,26,22">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" ShadowDepth="8" Direction="270" Color="#000000" Opacity="0.18"/>
+                </Border.Effect>
+                <StackPanel>
+                    <!-- Header -->
+                    <DockPanel LastChildFill="True">
+                        <Button DockPanel.Dock="Right" Width="34" Height="34" Padding="0"
+                                Click="CloseOpeningCashModal_Click"
+                                Style="{StaticResource FlatButton}"
+                                Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="17">
+                                        <TextBlock Text="✕" FontSize="13" Foreground="#111827"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Opening Cash" FontSize="19" FontWeight="Bold" Foreground="#111827"/>
+                            <TextBlock Text="Enter the starting cash amount for this shift"
+                                       FontSize="12.5" Foreground="#6B7280" Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- ================= SAVED STATE (Reference Web Design) ================= -->
+                    <StackPanel x:Name="OpeningCashSavedState" Visibility="Visible" Margin="0,18,0,0">
+                        <!-- Top Business Date Banner -->
+                        <Border Background="#EEF2FF" BorderBrush="#DDE3FF" BorderThickness="1"
+                                CornerRadius="8" Padding="12,10">
+                            <DockPanel LastChildFill="True">
+                                <Border DockPanel.Dock="Left" Width="18" Height="18" CornerRadius="9"
+                                        Background="#3943A8" Margin="0,0,10,0" VerticalAlignment="Center">
+                                    <TextBlock Text="i" Foreground="White" FontSize="11" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0"/>
+                                </Border>
+                                <TextBlock x:Name="OpeningCashBusinessDateBadge"
+                                           Text="Current Business Date - 16 Oct 2026 (Opening Cash Entered)"
+                                           FontSize="12.5" FontWeight="SemiBold" Foreground="#3943A8"
+                                           VerticalAlignment="Center"/>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Green Summary Card -->
+                        <Border Background="#F1FBF4" BorderBrush="#CBE9D7" BorderThickness="1"
+                                CornerRadius="10" Padding="18,16" Margin="0,16,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" MinWidth="135"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Left: Label + Value -->
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Opening Cash Amount" FontSize="12.5" Foreground="#5E8A70" FontWeight="Normal"/>
+                                    <TextBlock x:Name="OpeningCashSavedAmountText" Text="₹100.00"
+                                               FontSize="26" FontWeight="ExtraBold" Foreground="#16A34A" Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- Center: Exact Vector Illustration of Receipt, Green Card with Chip, and Gold Coins -->
+                                <Canvas Grid.Column="1" Width="152" Height="84" VerticalAlignment="Center" Margin="8,0">
+                                    <!-- White Receipt Paper -->
+                                    <Rectangle Canvas.Left="26" Canvas.Top="6" Width="52" Height="64" RadiusX="4" RadiusY="4" Fill="#FFFFFF" Stroke="#D7E3DB"/>
+                                    <Rectangle Canvas.Left="33" Canvas.Top="15" Width="38" Height="4" RadiusX="2" RadiusY="2" Fill="#E6EEE9"/>
+                                    <Rectangle Canvas.Left="33" Canvas.Top="24" Width="30" Height="4" RadiusX="2" RadiusY="2" Fill="#EEF4F0"/>
+                                    <Rectangle Canvas.Left="33" Canvas.Top="33" Width="34" Height="4" RadiusX="2" RadiusY="2" Fill="#EEF4F0"/>
+                                    <Rectangle Canvas.Left="33" Canvas.Top="42" Width="26" Height="4" RadiusX="2" RadiusY="2" Fill="#EEF4F0"/>
+                                    <!-- Green Card -->
+                                    <Rectangle Canvas.Left="70" Canvas.Top="30" Width="72" Height="46" RadiusX="6" RadiusY="6" Fill="#22A45D"/>
+                                    <Rectangle Canvas.Left="70" Canvas.Top="40" Width="72" Height="7" Fill="#18864A"/>
+                                    <Rectangle Canvas.Left="78" Canvas.Top="54" Width="22" Height="14" RadiusX="3" RadiusY="3" Fill="#F5C451"/>
+                                    <!-- Gold Coins -->
+                                    <Ellipse Canvas.Left="25" Canvas.Top="63" Width="34" Height="14" Fill="#F0B429"/>
+                                    <Ellipse Canvas.Left="25" Canvas.Top="59" Width="34" Height="14" Fill="#F7C948"/>
+                                    <Ellipse Canvas.Left="47" Canvas.Top="68" Width="30" Height="12" Fill="#F0B429"/>
+                                    <Ellipse Canvas.Left="47" Canvas.Top="64" Width="30" Height="12" Fill="#F7C948"/>
+                                    <Ellipse Canvas.Left="67" Canvas.Top="73" Width="26" Height="10" Fill="#F0B429"/>
+                                    <Ellipse Canvas.Left="67" Canvas.Top="70" Width="26" Height="10" Fill="#F7C948"/>
+                                </Canvas>
+
+                                <!-- Right: Note + Underline -->
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="6,0,0,0">
+                                    <TextBlock Text="This amount will be used as the cash balance"
+                                               FontSize="12.5" Foreground="#4B7C5F" TextWrapping="Wrap" LineHeight="18"/>
+                                    <Border Width="34" Height="2" Background="#16A34A" HorizontalAlignment="Left"
+                                            Margin="0,8,0,0" CornerRadius="1"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Bottom Important Banner -->
+                        <Border Background="#EEF2FF" BorderBrush="#DDE3FF" BorderThickness="1"
+                                CornerRadius="10" Padding="14,12" Margin="0,16,0,0">
+                            <DockPanel LastChildFill="True">
+                                <Border DockPanel.Dock="Left" Width="18" Height="18" CornerRadius="9"
+                                        Background="#3943A8" Margin="0,2,10,0" VerticalAlignment="Top">
+                                    <TextBlock Text="i" Foreground="White" FontSize="11" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0"/>
+                                </Border>
+                                <StackPanel>
+                                    <TextBlock Text="Important" FontWeight="Bold" FontSize="13" Foreground="#1F2937" Margin="0,0,0,2"/>
+                                    <TextBlock Text="This opening cash amount will be used to calculate the closing cash at the end of the shift."
+                                               FontSize="12.5" Foreground="#4B5563" TextWrapping="Wrap" LineHeight="18"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ================= INPUT STATE (When not yet entered) ================= -->
+                    <StackPanel x:Name="OpeningCashInputState" Visibility="Collapsed" Margin="0,18,0,0">
+                        <DockPanel LastChildFill="True" Margin="0,0,0,8">
+                            <TextBlock Text="Opening Cash Amount" FontWeight="SemiBold" FontSize="13" Foreground="#111827"/>
+                        </DockPanel>
+
+                        <!-- Amount input with currency prefix -->
+                        <Border BorderBrush="#D1D5DB" BorderThickness="1" CornerRadius="8" Background="White" Height="48">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="#F6F7FB" BorderBrush="#E5E7EB" BorderThickness="0,0,1,0"
+                                        Padding="14,0" CornerRadius="8,0,0,8">
+                                    <TextBlock Text="₹" FontSize="15" FontWeight="SemiBold" Foreground="#374151"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBox x:Name="OpeningCashAmountInputBox" Grid.Column="1"
+                                         FontSize="16" FontWeight="SemiBold" Foreground="#111827"
+                                         BorderThickness="0" Background="Transparent"
+                                         VerticalContentAlignment="Center" Padding="12,0"
+                                         TextChanged="OpeningCashAmountInputBox_TextChanged"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Quick Cash Chips -->
+                        <TextBlock Text="Quick cash" FontSize="13" FontWeight="SemiBold" Foreground="#111827" Margin="0,16,0,8"/>
+                        <WrapPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <Button Content="₹5" Tag="5" Click="QuickOpeningCash_Click"
+                                    Width="84" Height="40" Margin="0,0,8,6" Background="White"
+                                    BorderBrush="#E5E7EB" BorderThickness="1" Style="{StaticResource FlatButton}"
+                                    FontWeight="SemiBold" FontSize="13" Foreground="#374151"/>
+                            <Button Content="₹10" Tag="10" Click="QuickOpeningCash_Click"
+                                    Width="84" Height="40" Margin="0,0,8,6" Background="White"
+                                    BorderBrush="#E5E7EB" BorderThickness="1" Style="{StaticResource FlatButton}"
+                                    FontWeight="SemiBold" FontSize="13" Foreground="#374151"/>
+                            <Button Content="₹20" Tag="20" Click="QuickOpeningCash_Click"
+                                    Width="84" Height="40" Margin="0,0,8,6" Background="White"
+                                    BorderBrush="#E5E7EB" BorderThickness="1" Style="{StaticResource FlatButton}"
+                                    FontWeight="SemiBold" FontSize="13" Foreground="#374151"/>
+                            <Button Content="₹50" Tag="50" Click="QuickOpeningCash_Click"
+                                    Width="84" Height="40" Margin="0,0,8,6" Background="White"
+                                    BorderBrush="#E5E7EB" BorderThickness="1" Style="{StaticResource FlatButton}"
+                                    FontWeight="SemiBold" FontSize="13" Foreground="#374151"/>
+                            <Button Content="₹100" Tag="100" Click="QuickOpeningCash_Click"
+                                    Width="84" Height="40" Margin="0,0,8,6" Background="White"
+                                    BorderBrush="#E5E7EB" BorderThickness="1" Style="{StaticResource FlatButton}"
+                                    FontWeight="SemiBold" FontSize="13" Foreground="#374151"/>
+                        </WrapPanel>
+
+                        <!-- Important Banner -->
+                        <Border Background="#EEF2FF" BorderBrush="#DDE3FF" BorderThickness="1"
+                                CornerRadius="10" Padding="14,12" Margin="0,4,0,0">
+                            <DockPanel LastChildFill="True">
+                                <Border DockPanel.Dock="Left" Width="18" Height="18" CornerRadius="9"
+                                        Background="#3943A8" Margin="0,2,10,0" VerticalAlignment="Top">
+                                    <TextBlock Text="i" Foreground="White" FontSize="11" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0"/>
+                                </Border>
+                                <StackPanel>
+                                    <TextBlock Text="Important" FontWeight="Bold" FontSize="13" Foreground="#1F2937" Margin="0,0,0,2"/>
+                                    <TextBlock Text="This opening cash amount will be used to calculate the closing cash at the end of the shift."
+                                               FontSize="12.5" Foreground="#4B5563" TextWrapping="Wrap" LineHeight="18"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+
+                        <TextBlock x:Name="OpeningCashValidationText" Foreground="#DC2626" FontSize="12" Margin="0,8,0,0"
+                                   Visibility="Collapsed"/>
+
+                        <!-- Action buttons: Cancel and Save -->
+                        <Grid Margin="0,16,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="Cancel" Click="CloseOpeningCashModal_Click"
+                                    Height="48" Background="#F1F2F6" Foreground="#374151" BorderThickness="0"
+                                    FontWeight="SemiBold" FontSize="14" Cursor="Hand" Style="{StaticResource FlatButton}"/>
+                            <Button x:Name="SaveOpeningCashModalButton" Grid.Column="2" Content="Save opening cash"
+                                    Click="SaveOpeningCashModal_Click" Height="48"
+                                    Background="#3943A8" Foreground="White" BorderThickness="0"
+                                    FontWeight="SemiBold" FontSize="14" Cursor="Hand" Style="{StaticResource FlatButton}"/>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
             </Border>
         </Grid>
     </Grid>

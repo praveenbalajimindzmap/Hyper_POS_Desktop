@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using HyperPOS.Desktop.Data;
 using HyperPOS.Desktop.Models;
 using System.IO;
@@ -281,7 +282,7 @@ public partial class MainWindow : Window
         if (OpeningCashAmountText != null)
         {
             OpeningCashAmountText.Text = activeShift is null
-                ? "S$ 100.00"
+                ? "₹ 100.00"
                 : FormatMoney(activeShift.OpeningCash);
         }
         DayEndButton.IsEnabled = activeShift is not null;
@@ -973,26 +974,71 @@ public partial class MainWindow : Window
     private void OpeningCash_Click(object sender, RoutedEventArgs e)
     {
         RefreshShiftStatus();
-        if (activeShift is not null)
+        if (activeShift != null)
         {
-            new OpeningCashWindow(activeShift) { Owner = this }.ShowDialog();
+            OpeningCashSavedState.Visibility = Visibility.Visible;
+            OpeningCashInputState.Visibility = Visibility.Collapsed;
+            OpeningCashSavedAmountText.Text = FormatMoney(activeShift.OpeningCash);
+            OpeningCashBusinessDateBadge.Text = $"Current Business Date - {activeShift.BusinessDate:dd MMM yyyy} (Opening Cash Entered)";
+        }
+        else
+        {
+            OpeningCashSavedState.Visibility = Visibility.Collapsed;
+            OpeningCashInputState.Visibility = Visibility.Visible;
+            OpeningCashAmountInputBox.Text = "";
+            OpeningCashValidationText.Visibility = Visibility.Collapsed;
+            OpeningCashAmountInputBox.Focus();
+        }
+        OpeningCashModal.Visibility = Visibility.Visible;
+    }
+
+    private void CloseOpeningCashModal_Click(object sender, RoutedEventArgs e)
+    {
+        OpeningCashModal.Visibility = Visibility.Collapsed;
+    }
+
+    private void QuickOpeningCash_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string amt })
+        {
+            OpeningCashAmountInputBox.Text = amt;
+            OpeningCashAmountInputBox.CaretIndex = OpeningCashAmountInputBox.Text.Length;
+        }
+    }
+
+    private void OpeningCashAmountInputBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (OpeningCashValidationText == null || SaveOpeningCashModalButton == null) return;
+        var valid = decimal.TryParse(OpeningCashAmountInputBox.Text, NumberStyles.Number, CultureInfo.InvariantCulture, out var amt)
+            && amt is > 0 and <= 999999.99m;
+        OpeningCashValidationText.Visibility = valid || string.IsNullOrWhiteSpace(OpeningCashAmountInputBox.Text) ? Visibility.Collapsed : Visibility.Visible;
+        if (!valid && !string.IsNullOrWhiteSpace(OpeningCashAmountInputBox.Text))
+        {
+            OpeningCashValidationText.Text = "Enter a valid opening cash amount between ₹0.01 and ₹999,999.99.";
+        }
+        SaveOpeningCashModalButton.IsEnabled = valid;
+    }
+
+    private void SaveOpeningCashModal_Click(object sender, RoutedEventArgs e)
+    {
+        if (!decimal.TryParse(OpeningCashAmountInputBox.Text, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount)
+            || amount is <= 0 or > 999999.99m)
+        {
+            OpeningCashValidationText.Text = "Enter a valid opening cash amount between ₹0.01 and ₹999,999.99.";
+            OpeningCashValidationText.Visibility = Visibility.Visible;
             return;
         }
-
-        var dialog = new OpeningCashWindow { Owner = this };
-        if (dialog.ShowDialog() != true)
-            return;
 
         try
         {
-            database.OpenShift(dialog.OpeningCash, cashierName, cashierEmail);
+            database.OpenShift(amount, cashierName, cashierEmail);
             RefreshShiftStatus();
+            OpeningCashModal.Visibility = Visibility.Collapsed;
         }
         catch (Exception ex) when (ex is ArgumentOutOfRangeException or InvalidOperationException or Microsoft.Data.Sqlite.SqliteException)
         {
-            MessageBox.Show($"The shift could not be opened.\n\n{ex.Message}",
-                "Opening cash failed", MessageBoxButton.OK, MessageBoxImage.Error);
-            RefreshShiftStatus();
+            OpeningCashValidationText.Text = $"The shift could not be opened: {ex.Message}";
+            OpeningCashValidationText.Visibility = Visibility.Visible;
         }
     }
 
