@@ -624,36 +624,42 @@
                             Margin="0,0,8,0" FontSize="14" Foreground="#6B7280"
                             Background="White" BorderBrush="#E5E7EB"/>
 
-                    <!-- Install App button -->
-                    <Button Content="Install App" Height="34" Padding="12,0"
-                            Style="{StaticResource FlatButton}"
-                            Margin="0,0,8,0" FontSize="12" Foreground="#374151"
-                            Background="White" BorderBrush="#E5E7EB"/>
-
-                    <!-- Fullscreen / Expand button -->
-                    <Button Content="⤢" Click="MaximizeWindow_Click" ToolTip="Expand / Restore Screen"
-                            Width="34" Height="34" Padding="0"
-                            Style="{StaticResource FlatButton}"
-                            Margin="0,0,8,0" FontSize="14" Foreground="#6B7280"
-                            Background="White" BorderBrush="#E5E7EB"/>
-
-                    <!-- Dashboard button -->
-                    <Button x:Name="ProductsNav" Content="⊞ Dashboard" Click="ShowProducts_Click"
+                    <!-- Dashboard button (moves to Web https://saraaboutique.com/admin/pos) -->
+                    <Button x:Name="DashboardButton" Click="Dashboard_Click" ToolTip="Open Web POS (https://saraaboutique.com/admin/pos)"
                             Height="34" Padding="12,0" Margin="0,0,8,0"
                             Style="{StaticResource FlatButton}"
                             Background="White" BorderBrush="#E5E7EB"
-                            FontSize="12.5" Foreground="#374151"/>
+                            FontSize="12.5" Foreground="#374151">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="⊞ Dashboard" FontSize="12.5" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
 
-                    <!-- User icon button -->
-                    <Button Width="34" Height="34" Padding="0"
+                    <!-- Setting button -->
+                    <Button x:Name="SettingButton" Click="SetupProductSync_Click" ToolTip="Store &amp; Product Sync Settings"
+                            Height="34" Padding="12,0" Margin="0,0,8,0"
                             Style="{StaticResource FlatButton}"
-                            FontSize="14" Foreground="#6B7280"
-                            Background="White" BorderBrush="#E5E7EB">
-                        <TextBlock Text="👤" FontSize="13"/>
+                            Background="White" BorderBrush="#E5E7EB"
+                            FontSize="12.5" Foreground="#374151">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="⚙ Setting" FontSize="12.5" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Logout button (replaces profile design) -->
+                    <Button x:Name="LogoutButton" Click="Logout_Click" ToolTip="Log out of POS"
+                            Height="34" Padding="12,0"
+                            Style="{StaticResource FlatButton}"
+                            Background="White" BorderBrush="#FCA5A5" BorderThickness="1"
+                            FontSize="12.5" Foreground="#DC2626">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🚪 Logout" FontSize="12.5" FontWeight="SemiBold" Foreground="#DC2626"/>
+                        </StackPanel>
                     </Button>
 
                     <!-- Hidden Header elements (Preserved for C# code-behind compatibility without breaking builds) -->
                     <StackPanel x:Name="HiddenHeaderControls" Visibility="Collapsed">
+                        <Button x:Name="ProductsNav" Click="ShowProducts_Click"/>
                         <Button x:Name="MinimizeWindowButton" Click="MinimizeWindow_Click"/>
                         <Button x:Name="MaximizeWindowButton" Click="MaximizeWindow_Click">
                             <TextBlock x:Name="MaximizeIconText" Text="🗖"/>

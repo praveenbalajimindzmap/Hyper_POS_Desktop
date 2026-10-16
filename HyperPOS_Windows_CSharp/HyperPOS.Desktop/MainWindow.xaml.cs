@@ -914,6 +914,49 @@ public partial class MainWindow : Window
         RefreshProducts();
     }
 
+    private void Dashboard_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "https://saraaboutique.com/admin/pos",
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Could not open web dashboard:\n{ex.Message}", "Open Web", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void Logout_Click(object sender, RoutedEventArgs e)
+    {
+        var result = MessageBox.Show(
+            "Are you sure you want to log out of Saraa Boutique POS?",
+            "Logout",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            App.Log($"Cashier {cashierName} logged out");
+            try
+            {
+                if (customerDisplayWindow != null && customerDisplayWindow.IsLoaded)
+                {
+                    customerDisplayWindow.Close();
+                }
+            }
+            catch { }
+
+            var login = new LoginWindow();
+            Application.Current.MainWindow = login;
+            login.Show();
+            this.Close();
+        }
+    }
+
     private void ShowSales_Click(object sender, RoutedEventArgs e)
     {
         ReceiptsModal.Visibility = Visibility.Visible;

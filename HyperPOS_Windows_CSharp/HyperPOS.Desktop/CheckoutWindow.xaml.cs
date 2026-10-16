@@ -70,7 +70,7 @@ public partial class CheckoutWindow : Window
         }
         else if (rb == PayCardRadio)
         {
-            PaymentMethod = "Card";
+            PaymentMethod = "Voucher";
             UpiQrContainer.Visibility = Visibility.Collapsed;
             SplitPayContainer.Visibility = Visibility.Collapsed;
             CashTenderSection.Visibility = Visibility.Collapsed;

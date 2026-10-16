@@ -104,7 +104,7 @@
                 <WrapPanel Margin="0,0,0,14">
                     <RadioButton x:Name="PayCashRadio" Content="💵 Cash" Style="{StaticResource PayMethodBtn}" IsChecked="True" Checked="PaymentMethod_Checked"/>
                     <RadioButton x:Name="PayUpiRadio" Content="📱 Dynamic UPI / QR" Style="{StaticResource PayMethodBtn}" Checked="PaymentMethod_Checked"/>
-                    <RadioButton x:Name="PayCardRadio" Content="💳 Card (POS)" Style="{StaticResource PayMethodBtn}" Checked="PaymentMethod_Checked"/>
+                    <RadioButton x:Name="PayCardRadio" Content="🎟️ Voucher" Style="{StaticResource PayMethodBtn}" Checked="PaymentMethod_Checked"/>
                     <RadioButton x:Name="PayCreditRadio" Content="🏷️ Store Credit" Style="{StaticResource PayMethodBtn}" Checked="PaymentMethod_Checked"/>
                     <RadioButton x:Name="PayChequeRadio" Content="📄 Cheque" Style="{StaticResource PayMethodBtn}" Checked="PaymentMethod_Checked"/>
                     <RadioButton x:Name="PaySplitRadio" Content="⚖️ Split Pay" Style="{StaticResource PayMethodBtn}" Checked="PaymentMethod_Checked"/>
