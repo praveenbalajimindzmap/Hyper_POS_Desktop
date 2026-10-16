@@ -761,53 +761,53 @@
                                     Visibility="Visible">
                             <!-- Basket Icon with Badge & Motion Lines -->
                             <Grid Width="160" Height="140" HorizontalAlignment="Center">
-                                <!-- Motion lines (dashed decorative curved arcs on left) -->
-                                <Path Data="M 18,28 C 12,32 10,42 16,50"
-                                      Stroke="#CBD5E1" StrokeThickness="2" StrokeDashArray="2,2"/>
-                                <Path Data="M 28,18 C 18,24 16,36 24,46"
-                                      Stroke="#CBD5E1" StrokeThickness="2" StrokeDashArray="2,2"/>
-
-                                <!-- Shopping Basket Body & Handles -->
-                                <Canvas Width="120" Height="100" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <!-- Basket Handles -->
-                                    <Path Data="M 38,45 C 38,20 62,20 62,45"
-                                          Stroke="#94A3B8" StrokeThickness="3.5" Fill="Transparent"/>
-                                    <Path Data="M 58,45 C 58,20 82,20 82,45"
-                                          Stroke="#94A3B8" StrokeThickness="3.5" Fill="Transparent"/>
-                                    <!-- Basket Top Rim -->
-                                    <Rectangle Canvas.Left="15" Canvas.Top="42" Width="90" Height="8"
-                                               RadiusX="4" RadiusY="4"
-                                               Fill="#F1F5F9" Stroke="#94A3B8" StrokeThickness="2"/>
-                                    <!-- Basket Lower Body -->
-                                    <Path Data="M 22,50 L 32,88 C 33,92 37,95 42,95 L 78,95 C 83,95 87,92 88,88 L 98,50 Z"
-                                          Fill="#F8FAFC" Stroke="#94A3B8" StrokeThickness="2"/>
-                                    <!-- Basket Vertical Slits -->
-                                    <Line X1="45" Y1="56" X2="48" Y2="86" Stroke="#CBD5E1" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                                    <Line X1="60" Y1="56" X2="60" Y2="86" Stroke="#CBD5E1" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                                    <Line X1="75" Y1="56" X2="72" Y2="86" Stroke="#CBD5E1" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                                </Canvas>
-
-                                <!-- "0" Badge at Top-Right of Basket -->
-                                <Border HorizontalAlignment="Right" VerticalAlignment="Top"
-                                        Margin="0,16,22,0" Width="36" Height="24"
-                                        Background="#F1F5F9" BorderBrush="#94A3B8" BorderThickness="1.5"
-                                        CornerRadius="6">
-                                    <TextBlock Text="0" FontSize="13" FontWeight="Bold" Foreground="#64748B"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-
-                                <!-- Subtle shadow under basket -->
+                                <!-- Subtle ground shadow under basket -->
                                 <Ellipse Width="110" Height="14" Fill="#E2E8F0"
                                          HorizontalAlignment="Center" VerticalAlignment="Bottom"
-                                         Margin="0,0,0,10" Opacity="0.6"/>
+                                         Margin="0,0,0,6" Opacity="0.5"/>
+
+                                <!-- Shopping Basket Body & Handle (Matching Web Design) -->
+                                <Canvas Width="140" Height="110" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <!-- Sparkles on top-left -->
+                                    <Ellipse Canvas.Left="26" Canvas.Top="20" Width="4" Height="4" Fill="#CBD5E1"/>
+                                    <Ellipse Canvas.Left="18" Canvas.Top="30" Width="3" Height="3" Fill="#CBD5E1"/>
+                                    <Ellipse Canvas.Left="34" Canvas.Top="32" Width="4" Height="4" Fill="#94A3B8"/>
+
+                                    <!-- Single Arched Basket Handle -->
+                                    <Path Data="M 44,52 C 44,18 88,18 88,52"
+                                          Stroke="#94A3B8" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+
+                                    <!-- Hanging String and "0" Tag on Handle -->
+                                    <Path Data="M 82,30 L 92,24" Stroke="#94A3B8" StrokeThickness="1.5" StrokeDashArray="2,2"/>
+                                    <Border Canvas.Left="90" Canvas.Top="12" Width="32" Height="22"
+                                            Background="#F8FAFC" BorderBrush="#94A3B8" BorderThickness="1.5"
+                                            CornerRadius="4">
+                                        <TextBlock Text="0" FontSize="11.5" FontWeight="Bold" Foreground="#64748B"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Basket Top Rim -->
+                                    <Rectangle Canvas.Left="24" Canvas.Top="50" Width="84" Height="7"
+                                               RadiusX="3.5" RadiusY="3.5"
+                                               Fill="#F1F5F9" Stroke="#94A3B8" StrokeThickness="2"/>
+
+                                    <!-- Basket Lower Body -->
+                                    <Path Data="M 30,56 L 39,94 C 40,97 44,100 48,100 L 84,100 C 88,100 92,97 93,94 L 102,56 Z"
+                                          Fill="#F8FAFC" Stroke="#94A3B8" StrokeThickness="2" StrokeLineJoin="Round"/>
+
+                                    <!-- Basket Vertical Slits -->
+                                    <Line X1="51" Y1="63" X2="53" Y2="93" Stroke="#CBD5E1" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line X1="66" Y1="63" X2="66" Y2="93" Stroke="#CBD5E1" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Line X1="81" Y1="63" X2="79" Y2="93" Stroke="#CBD5E1" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                </Canvas>
                             </Grid>
 
                             <TextBlock Text="Current Sales Empty"
-                                       FontSize="16" FontWeight="Bold" Foreground="#1E293B"
-                                       HorizontalAlignment="Center" Margin="0,16,0,6"/>
+                                       FontSize="15" FontWeight="Bold" Foreground="#1E293B"
+                                       HorizontalAlignment="Center" Margin="0,14,0,5"/>
                             <TextBlock Text="Scan a product, search or browse from the&#x0a;right side to start a new sale."
-                                       FontSize="12" Foreground="#64748B" TextAlignment="Center"
-                                       LineHeight="18" HorizontalAlignment="Center"/>
+                                       FontSize="11.5" Foreground="#94A3B8" TextAlignment="Center"
+                                       LineHeight="17" HorizontalAlignment="Center"/>
                         </StackPanel>
 
                         <!-- Cart items list (visible when cart or refund items exist) -->
@@ -1284,24 +1284,54 @@
                         </Button>
 
                         <!-- 3. Filter Button -->
-                        <Button Grid.Column="2" Style="{StaticResource FlatButton}"
+                        <Button x:Name="FilterButton" Grid.Column="2" Style="{StaticResource FlatButton}"
                                 Height="38" Padding="12,0" Margin="0,0,8,0"
+                                Click="FilterButton_Click" Cursor="Hand"
                                 FontSize="11.5" Foreground="#374151"
                                 Background="White" BorderBrush="#E2E8F0" BorderThickness="1">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="⊟ " FontSize="11" Foreground="#6B7280" VerticalAlignment="Center"/>
-                                <TextBlock Text="Filter ▾" FontSize="11.5" Foreground="#374151" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="FilterButtonIcon" Text="⊟ " FontSize="11" Foreground="#6B7280" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="FilterButtonText" Text="Filter ▾" FontSize="11.5" FontWeight="SemiBold" Foreground="#374151" VerticalAlignment="Center"/>
                             </StackPanel>
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="FilterContextMenu" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                                             Padding="4" HasDropShadow="True">
+                                    <MenuItem x:Name="ClearFilterMenuItem" Header="✕ Clear Filter" Click="FilterOption_Click" Tag=""
+                                              Visibility="Collapsed" FontWeight="SemiBold" Foreground="#EF4444" Padding="10,6"/>
+                                    <Separator x:Name="FilterSeparator" Visibility="Collapsed"/>
+                                    <MenuItem Header="Out Of Stock" Click="FilterOption_Click" Tag="out_of_stock" Padding="10,6"/>
+                                    <MenuItem Header="Offers" Click="FilterOption_Click" Tag="offers" Padding="10,6"/>
+                                    <MenuItem Header="Deals" Click="FilterOption_Click" Tag="deals" Padding="10,6"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
                         </Button>
 
                         <!-- 4. Sort Button -->
-                        <Button Grid.Column="3" Style="{StaticResource FlatButton}"
+                        <Button x:Name="SortButton" Grid.Column="3" Style="{StaticResource FlatButton}"
                                 Height="38" Padding="12,0" Margin="0,0,0,0"
+                                Click="SortButton_Click" Cursor="Hand"
                                 FontSize="11.5" Foreground="#374151"
                                 Background="White" BorderBrush="#E2E8F0" BorderThickness="1">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Sort ▾" FontSize="11.5" Foreground="#374151" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="SortButtonIcon" Text="⇅ " FontSize="11" Foreground="#6B7280" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="SortButtonText" Text="Sort ▾" FontSize="11.5" FontWeight="SemiBold" Foreground="#374151" VerticalAlignment="Center"/>
                             </StackPanel>
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="SortContextMenu" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                                             Padding="4" HasDropShadow="True">
+                                    <MenuItem x:Name="ClearSortMenuItem" Header="✕ Clear Sort" Click="SortOption_Click" Tag=""
+                                              Visibility="Collapsed" FontWeight="SemiBold" Foreground="#EF4444" Padding="10,6"/>
+                                    <Separator x:Name="SortSeparator" Visibility="Collapsed"/>
+                                    <MenuItem Header="Sale: High - Low" Click="SortOption_Click" Tag="sale_high_low" Padding="10,6"/>
+                                    <MenuItem Header="Sale: Low - High" Click="SortOption_Click" Tag="sale_low_high" Padding="10,6"/>
+                                    <MenuItem Header="Offer: High - Low" Click="SortOption_Click" Tag="offer_high_low" Padding="10,6"/>
+                                    <MenuItem Header="Offer: Low - High" Click="SortOption_Click" Tag="offer_low_high" Padding="10,6"/>
+                                    <MenuItem Header="Price: High - Low" Click="SortOption_Click" Tag="price_high_low" Padding="10,6"/>
+                                    <MenuItem Header="Price: Low - High" Click="SortOption_Click" Tag="price_low_high" Padding="10,6"/>
+                                    <MenuItem Header="Product: A - Z" Click="SortOption_Click" Tag="product_a_z" Padding="10,6"/>
+                                    <MenuItem Header="Product: Z - A" Click="SortOption_Click" Tag="product_z_a" Padding="10,6"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
                         </Button>
                     </Grid>
 
@@ -1353,6 +1383,27 @@
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
                     </ScrollViewer>
+
+                    <!-- Empty Products Placeholder (Matching _products-area.blade.php empty state) -->
+                    <Border x:Name="EmptyProductsPlaceholder" Grid.Row="2" Visibility="Collapsed"
+                            Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                            CornerRadius="12" Padding="40" Margin="20"
+                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <StackPanel HorizontalAlignment="Center">
+                            <Canvas Width="80" Height="80" HorizontalAlignment="Center">
+                                <!-- Isometric Box / Package Illustration -->
+                                <Path Data="M 12,28 L 40,14 L 68,28 L 40,42 Z" Fill="#EFF6FF" Stroke="#93C5FD" StrokeThickness="1.5"/>
+                                <Path Data="M 12,28 L 40,42 L 40,68 L 12,54 Z" Fill="#DBEAFE" Stroke="#93C5FD" StrokeThickness="1.5"/>
+                                <Path Data="M 68,28 L 40,42 L 40,68 L 68,54 Z" Fill="#BFDBFE" Stroke="#93C5FD" StrokeThickness="1.5"/>
+                                <Path Data="M 28,18 L 40,24 L 52,18" Stroke="#60A5FA" StrokeThickness="1.5" Fill="Transparent"/>
+                                <Ellipse Canvas.Left="35" Canvas.Top="62" Width="10" Height="4" Fill="#93C5FD" Opacity="0.5"/>
+                            </Canvas>
+                            <TextBlock Text="No Products Available" FontSize="15" FontWeight="Bold"
+                                       Foreground="#1F2937" HorizontalAlignment="Center" Margin="0,14,0,4"/>
+                            <TextBlock Text="Currently no product available by this category, search, or filter."
+                                       FontSize="12" Foreground="#6B7280" HorizontalAlignment="Center" TextAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
 
                     <!-- Footer -->
                     <Border Grid.Row="3" Margin="5,4">

@@ -84,6 +84,7 @@ public partial class MainWindow : Window
         CartItems.ItemsSource = cart;
         RefundCartItems.ItemsSource = refundCartItems;
         SaraaSqlImporter.ImportSaraaProducts(database);
+        UpdateFilterSortUI();
         RefreshCatalog();
         RefreshProducts();
         activeShift = database.GetActiveShift(this.cashierEmail);
@@ -116,6 +117,123 @@ public partial class MainWindow : Window
         ScanProduct();
     }
 
+    private string? activeFilter;
+    private string? activeSort;
+
+    private void FilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (FilterButton.ContextMenu != null)
+        {
+            FilterButton.ContextMenu.PlacementTarget = FilterButton;
+            FilterButton.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            FilterButton.ContextMenu.IsOpen = true;
+        }
+    }
+
+    private void SortButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (SortButton.ContextMenu != null)
+        {
+            SortButton.ContextMenu.PlacementTarget = SortButton;
+            SortButton.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            SortButton.ContextMenu.IsOpen = true;
+        }
+    }
+
+    private void FilterOption_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem item)
+        {
+            var tag = item.Tag as string;
+            activeFilter = string.IsNullOrEmpty(tag) ? null : tag;
+            UpdateFilterSortUI();
+            RefreshCatalog();
+        }
+    }
+
+    private void SortOption_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem item)
+        {
+            var tag = item.Tag as string;
+            activeSort = string.IsNullOrEmpty(tag) ? null : tag;
+            UpdateFilterSortUI();
+            RefreshCatalog();
+        }
+    }
+
+    private void UpdateFilterSortUI()
+    {
+        if (FilterButtonText == null || SortButtonText == null) return;
+
+        var activeBlue = new SolidColorBrush(Color.FromRgb(59, 75, 216));
+        var activeBg = new SolidColorBrush(Color.FromRgb(238, 242, 255));
+        var defaultBorder = new SolidColorBrush(Color.FromRgb(226, 232, 240));
+        var defaultFg = new SolidColorBrush(Color.FromRgb(55, 65, 81));
+        var defaultIconFg = new SolidColorBrush(Color.FromRgb(107, 114, 128));
+
+        // Update Filter button
+        if (string.IsNullOrEmpty(activeFilter))
+        {
+            FilterButtonText.Text = "Filter ▾";
+            FilterButtonText.Foreground = defaultFg;
+            FilterButtonIcon.Foreground = defaultIconFg;
+            FilterButton.Background = Brushes.White;
+            FilterButton.BorderBrush = defaultBorder;
+            ClearFilterMenuItem.Visibility = Visibility.Collapsed;
+            FilterSeparator.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            FilterButtonText.Text = activeFilter switch
+            {
+                "out_of_stock" => "Out Of Stock ▾",
+                "offers" => "Offers ▾",
+                "deals" => "Deals ▾",
+                _ => $"{activeFilter} ▾"
+            };
+            FilterButtonText.Foreground = activeBlue;
+            FilterButtonIcon.Foreground = activeBlue;
+            FilterButton.Background = activeBg;
+            FilterButton.BorderBrush = activeBlue;
+            ClearFilterMenuItem.Visibility = Visibility.Visible;
+            FilterSeparator.Visibility = Visibility.Visible;
+        }
+
+        // Update Sort button
+        if (string.IsNullOrEmpty(activeSort))
+        {
+            SortButtonText.Text = "Sort ▾";
+            SortButtonText.Foreground = defaultFg;
+            SortButtonIcon.Foreground = defaultIconFg;
+            SortButton.Background = Brushes.White;
+            SortButton.BorderBrush = defaultBorder;
+            ClearSortMenuItem.Visibility = Visibility.Collapsed;
+            SortSeparator.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            SortButtonText.Text = activeSort switch
+            {
+                "sale_high_low" => "Sale: High - Low ▾",
+                "sale_low_high" => "Sale: Low - High ▾",
+                "offer_high_low" => "Offer: High - Low ▾",
+                "offer_low_high" => "Offer: Low - High ▾",
+                "price_high_low" => "Price: High - Low ▾",
+                "price_low_high" => "Price: Low - High ▾",
+                "product_a_z" => "Product: A - Z ▾",
+                "product_z_a" => "Product: Z - A ▾",
+                _ => $"{activeSort} ▾"
+            };
+            SortButtonText.Foreground = activeBlue;
+            SortButtonIcon.Foreground = activeBlue;
+            SortButton.Background = activeBg;
+            SortButton.BorderBrush = activeBlue;
+            ClearSortMenuItem.Visibility = Visibility.Visible;
+            SortSeparator.Visibility = Visibility.Visible;
+        }
+    }
+
     private void RefreshCatalog()
     {
         var rawSearch = SearchBox.Text?.Trim() ?? string.Empty;
@@ -126,12 +244,48 @@ public partial class MainWindow : Window
         }
 
         var products = database.GetProducts(searchTerm, selectedCategory);
+
+        // Apply Filter (Matching PHP Web App)
+        if (!string.IsNullOrEmpty(activeFilter))
+        {
+            products = activeFilter switch
+            {
+                "out_of_stock" => products.Where(p => p.Stock <= 0).ToList(),
+                "offers" => products.Where(p => p.HasDiscount || p.OriginalPrice > p.Price || p.Discount > 0).ToList(),
+                "deals" => products.Where(p => p.HasDealBadge || (p.DealBadge != null && p.DealBadge.Length > 0)).ToList(),
+                _ => products
+            };
+        }
+
+        // Apply Sort (Matching PHP Web App)
+        if (!string.IsNullOrEmpty(activeSort))
+        {
+            products = activeSort switch
+            {
+                "price_low_high" => products.OrderBy(p => p.Price).ToList(),
+                "price_high_low" => products.OrderByDescending(p => p.Price).ToList(),
+                "product_a_z" => products.OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase).ToList(),
+                "product_z_a" => products.OrderByDescending(p => p.Name, StringComparer.OrdinalIgnoreCase).ToList(),
+                "offer_high_low" => products.OrderByDescending(p => p.Discount).ToList(),
+                "offer_low_high" => products.OrderBy(p => p.Discount).ToList(),
+                "sale_high_low" => products.OrderByDescending(p => p.Stock).ToList(),
+                "sale_low_high" => products.OrderBy(p => p.Stock).ToList(),
+                _ => products
+            };
+        }
+
         var cartLookup = cart.ToDictionary(c => c.Product.Id, c => c.Quantity);
         foreach (var prod in products)
         {
             prod.CartQuantity = cartLookup.TryGetValue(prod.Id, out var qty) ? qty : 0;
         }
         ProductCatalog.ItemsSource = products;
+
+        if (EmptyProductsPlaceholder != null)
+        {
+            EmptyProductsPlaceholder.Visibility = products.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         var allProducts = database.GetProducts(searchTerm);
         ProductCountText.Text = $"Showing 1 – {products.Count} of {allProducts.Count} Products";
         var categories = database.GetCategories();
