@@ -1503,6 +1503,43 @@ public partial class MainWindow : Window
         }
     }
 
+    private void RemoveRefundItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is RefundCartItem item)
+        {
+            refundCartItems.Remove(item);
+            if (refundCartItems.Count == 0)
+            {
+                activeRefundReceiptNumber = null;
+                currentRefundSummary = null;
+                if (RefundedProductsSection != null) RefundedProductsSection.Visibility = Visibility.Collapsed;
+                if (RefundedAmountRow != null) RefundedAmountRow.Visibility = Visibility.Collapsed;
+            }
+            UpdateCartSummary();
+        }
+    }
+
+    private void ClearRefund_Click(object sender, RoutedEventArgs e)
+    {
+        if (refundCartItems.Count == 0) return;
+
+        var confirm = MessageBox.Show(
+            "Are you sure you want to remove all refunded items from this sale?",
+            "Remove Refund",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (confirm == MessageBoxResult.Yes)
+        {
+            refundCartItems.Clear();
+            activeRefundReceiptNumber = null;
+            currentRefundSummary = null;
+            if (RefundedProductsSection != null) RefundedProductsSection.Visibility = Visibility.Collapsed;
+            if (RefundedAmountRow != null) RefundedAmountRow.Visibility = Visibility.Collapsed;
+            UpdateCartSummary();
+        }
+    }
+
     private void OpenReceipt(SaleSummary sale)
     {
         try

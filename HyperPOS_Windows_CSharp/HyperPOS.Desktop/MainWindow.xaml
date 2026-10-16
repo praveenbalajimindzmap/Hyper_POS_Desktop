@@ -878,10 +878,20 @@
                                                                 <TextBlock Text="{Binding Quantity}" FontSize="12" FontWeight="SemiBold" Foreground="#111827"/>
                                                             </Border>
 
-                                                            <!-- Negative Refund Total -->
-                                                            <TextBlock Grid.Column="3" Text="{Binding RefundTotal, StringFormat=- ₹{0:N2}}"
-                                                                       FontSize="12" FontWeight="Bold" Foreground="#DC2626"
-                                                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                            <!-- Delete button + Negative Refund Total -->
+                                                            <StackPanel Grid.Column="3" VerticalAlignment="Stretch">
+                                                                <Button Content="🗑" Tag="{Binding}"
+                                                                        Width="22" Height="22" Padding="0"
+                                                                        Click="RemoveRefundItem_Click" ToolTip="Remove refunded item"
+                                                                        Background="#FEE2E2" BorderThickness="0"
+                                                                        Style="{StaticResource FlatButton}"
+                                                                        FontSize="10" Foreground="#DC2626"
+                                                                        HorizontalAlignment="Right"/>
+                                                                <TextBlock Text="{Binding RefundTotal, StringFormat=- ₹{0:N2}}"
+                                                                           FontSize="12" FontWeight="Bold" Foreground="#DC2626"
+                                                                           HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                                                           Margin="0,4,0,0"/>
+                                                            </StackPanel>
                                                         </Grid>
                                                     </Border>
                                                 </DataTemplate>
@@ -1113,13 +1123,19 @@
                             BorderThickness="1" CornerRadius="8"
                             Padding="10,8" Margin="8,0,8,8">
                         <StackPanel>
-                            <!-- Refunded Amount row (visible when refund items exist) -->
-                            <DockPanel x:Name="RefundedAmountRow" Visibility="Collapsed" Margin="0,0,0,5">
-                                <TextBlock x:Name="RefundedAmountLabel" Text="Refunded Amount (#100004, 1 Items)"
-                                           FontSize="12" Foreground="#DC2626" FontWeight="SemiBold"/>
+                            <!-- Refunded Amount row (visible when refund items exist, exactly matching PHP web design) -->
+                            <DockPanel x:Name="RefundedAmountRow" Visibility="Collapsed" Margin="0,0,0,5" LastChildFill="True">
                                 <TextBlock x:Name="RefundedAmountText" Text="- ₹0.00"
                                            DockPanel.Dock="Right" FontSize="12.5" FontWeight="Bold"
-                                           Foreground="#DC2626"/>
+                                           Foreground="#DC2626" VerticalAlignment="Center"/>
+                                <Button x:Name="ClearRefundRowButton" DockPanel.Dock="Right" Content="🗑"
+                                        Width="20" Height="20" Padding="0" Margin="0,0,6,0"
+                                        Click="ClearRefund_Click" ToolTip="Remove Refund Items"
+                                        Background="#FEE2E2" BorderBrush="#FECACA" BorderThickness="1"
+                                        Style="{StaticResource FlatButton}"
+                                        FontSize="9.5" Foreground="#DC2626" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="RefundedAmountLabel" Text="Refunded Amount (#100004, 1 Items)"
+                                           FontSize="12" Foreground="#DC2626" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </DockPanel>
 
                             <!-- Product Price -->
